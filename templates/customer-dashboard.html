@@ -6,31 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Sử dụng Heroicons SVG cho sidebar -->
     <style>
-        .action-bar {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 18px;
+        /* action bar - giữ 1 định nghĩa duy nhất */
+        .header-title { font-size: 22px; font-weight: 700; color: #1f2937; }
+        .header-logo {
+            display: flex; align-items: center; gap: 10px; margin-right: 18px;
         }
-        .action-bar button {
-            padding: 8px 16px; border: none; border-radius: 5px; background: #3498db; color: #fff; font-size: 15px; cursor: pointer; transition: background 0.2s;
-        }
-        .action-bar button:hover { background: #217dbb; }
-        .header {
-            display: flex;
-            align-items: center;
-            background: #fff;
-            padding: 24px 0 16px 0;
-            border-bottom: 1px solid #e0e0e0;
-            margin-bottom: 10px;
-        }
-        .header-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-left: 24px;
-            flex: 1;
-            display: flex;
-            align-items: center;
+        .header-logo .logo-box {
+            width: 36px; height: 36px; border-radius: 8px; background: #e8f1ff; display:flex; align-items:center; justify-content:center; color:#2563eb;
         }
         .header-tabs {
             display: flex;
@@ -54,17 +36,9 @@
             color: #fff;
         }
         .user-box {
-            display: flex;
-            align-items: center;
-            background: #f5f6f5;
-            border-radius: 20px;
-            padding: 4px 14px 4px 8px;
-            font-size: 15px;
-            font-weight: 500;
-            color: #3498db;
-            box-shadow: 0 1px 4px rgba(52,152,219,0.07);
-            position: relative;
-            cursor: pointer;
+            display: flex; align-items: center; background: #f0f5f0; border: 1px solid #e6eef7; border-radius: 20px;
+            padding: 6px 14px 6px 8px; font-size: 15px; font-weight: 500; color: #3498db; box-shadow: 0 4px 14px rgba(83, 170, 228, 0.12);
+            position: relative; z-index: 2; cursor: pointer; backdrop-filter: saturate(160%) blur(4px);
         }
         .user-box:hover .user-dropdown {
             display: block;
@@ -82,7 +56,7 @@
             font-size: 15px;
             color: #3498db;
             padding: 8px 0;
-            z-index: 100;
+            z-index: 1001;
         }
         .user-dropdown a {
             display: block;
@@ -157,11 +131,13 @@
         .sidebar ul li a.active, .sidebar ul li a:hover {
             background: #3498db; color: #fff; border-radius: 8px 0 0 8px;
         }
-        .main {
-            margin-left: 220px; padding: 0 40px 40px 40px;
-        }
+        .main { margin-left: 220px; padding: 0 40px 40px 40px; }
         .header {
-            display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 24px 0 16px 0; border-bottom: 1px solid #e0e0e0; margin-bottom: 30px;
+            position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between;
+            /* kéo giãn chạm hai mép vùng .main (bù padding 40px) */
+            margin-left: -40px; margin-right: -40px; padding: 12px 40px;
+            background: #f8fafc; /* nhạt hơn khu vực main */
+            border-bottom: 1px solid #e6eef7; margin-bottom: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
         }
         .header .customer {
             display: flex; align-items: center;
@@ -197,6 +173,11 @@
             .content { flex-direction: column; }
             .history { min-width: unset; }
         }
+        @media (max-width: 768px) {
+            .user-box { right: 12px; top: 10px; padding: 5px 12px 5px 6px; }
+            .user-avatar { width: 28px; height: 28px; }
+            .user-avatar svg { width: 18px; height: 18px; }
+        }
     </style>
 </head>
 <body>
@@ -214,8 +195,18 @@
     </div>
     <div class="main">
         <div class="header">
-            <div class="header-title">
-                Thông tin khách hàng
+            <div style="display:flex; align-items:center; gap:16px;">
+                <div class="header-logo">
+                    <div class="logo-box" aria-label="Customers">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                            <circle cx="9" cy="8" r="3" fill="#2563eb" opacity="0.9"></circle>
+                            <circle cx="16" cy="9" r="2.5" fill="#2563eb" opacity="0.6"></circle>
+                            <rect x="4" y="13" width="10" height="7" rx="3.5" fill="#2563eb" opacity="0.15"></rect>
+                            <rect x="12.5" y="13.5" width="7" height="6.5" rx="3.25" fill="#2563eb" opacity="0.12"></rect>
+                        </svg>
+                    </div>
+                    <div class="header-title">Thông tin khách hàng</div>
+                </div>
             </div>
             <div class="user-box">
                 <span class="user-avatar">
@@ -254,8 +245,6 @@
                     <tr><td class="label">Mã KH:</td><td>KH001</td></tr>
                     <tr><td class="label">Tổng tiền mua:</td><td>1,500,000đ</td></tr>
                     <tr><td class="label">Ngày cuối mua:</td><td>28/09/2025</td></tr>
-                                </div>
-
                 </table>
             </div>
             <div class="history">
@@ -287,9 +276,10 @@
                         <td class="history-statusunfinish">Đang xử lý</td>
                     </tr>
                 </table>
-                <div style="margin-top:12px; color:#675c5c; font-size:14px;">Hiển thị 2/2 kết quả</div>
+                <div style="margin-bottom:12px; color:#675c5c; font-size:14px;">Hiển thị 2/2 kết quả</div>
             </div>
         </div>
     </div>
+    
 </body>
 </html>
