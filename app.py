@@ -4,6 +4,12 @@ from openpyxl import Workbook, load_workbook
 import pandas as pd
 from pathlib import Path
 import time
+# Web dependencies (optional, only used when RUN_WEB=1)
+try:
+    from flask import Flask, render_template
+except Exception:
+    Flask = None
+    render_template = None
 
 def is_data_none():
     wb=load_workbook(filename="ThongTinKhachHang.xlsx")
@@ -16,7 +22,8 @@ def is_data_none():
             return False
         
 def is_recycle_bin():
-    file_path = Path("Recycle Bin\ThongTinKhachHang.xlsx")
+    # Dùng Path join để tránh lỗi escape chuỗi trên Windows
+    file_path = Path("Recycle Bin") / "ThongTinKhachHang.xlsx"
     if file_path.exists() and file_path.is_file():
         return True
 
@@ -88,6 +95,74 @@ def add_customer():
     
     return print(Fore.GREEN + Back.BLACK + "Thêm khách hàng thành công.")
     
+########################
+# Flask web integration #
+########################
+
+def load_first_customer_for_web() -> dict | None:
+    try:
+        excel_path = Path("ThongTinKhachHang.xlsx")
+        if not excel_path.exists():
+            return None
+        wb = load_workbook(filename=str(excel_path))
+        sheet = wb.active
+        header = [cell.value for cell in sheet[1]]
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            if row and any(cell is not None for cell in row):
+                return dict(zip(header, row))
+        return None
+    except Exception:
+        return None
+
+# Create Flask app only if Flask is available
+app = Flask(__name__) if Flask else None
+
+if app:
+    @app.route("/customer-dashboard")
+    def customer_dashboard():
+        raw = load_first_customer_for_web()
+        customer = None
+        if raw:
+            customer = {
+                "name": raw.get("Họ Tên") or raw.get("Ho Ten") or raw.get("Ten") or "",
+                "dob": raw.get("Ngày sinh") or raw.get("Ngay Sinh") or "",
+                "phone": raw.get("Số ĐT") or raw.get("So DT") or raw.get("SĐT") or raw.get("Phone") or "",
+                "email": raw.get("Email") or "",
+                "address": raw.get("Địa Chỉ") or raw.get("Dia Chi") or raw.get("Address") or "",
+                "code": raw.get("Mã KH") or raw.get("Ma KH") or raw.get("Code") or "",
+                "total": raw.get("Tổng tiền mua") or raw.get("Tong Tien Mua") or "",
+                "last_purchase": raw.get("Ngày cuối mua") or raw.get("Ngay Cuoi Mua") or "",
+            }
+
+        sample_orders = [
+            {
+                "code": "DLU00001",
+                "customer": (customer["name"] if customer and customer.get("name") else "Nguyễn Phước Lộc"),
+                "export_status": "Đã xuất",
+                "value": "1,500,000đ",
+                "date": "28/09/2025",
+                "status": "done",
+                "status_label": "Hoàn thành",
+            },
+            {
+                "code": "DLU00002",
+                "customer": (customer["name"] if customer and customer.get("name") else "Nguyễn Phước Lộc"),
+                "export_status": "Chưa xuất",
+                "value": "2,000,000đ",
+                "date": "29/09/2025",
+                "status": "processing",
+                "status_label": "Đang xử lý",
+            },
+        ]
+
+        return render_template(
+            "customer_dashboard_jinja.html",
+            active="customers",
+            user_name="Admin",
+            customer=customer,
+            orders=sample_orders,
+        )
+
 def main():
     
     init(autoreset=False)
@@ -129,5 +204,9 @@ def main():
     else: print(Fore.RED + Back.BLACK + "Lựa chọn không hợp lệ. Vui lòng thử lại!!!")
     
 if __name__ == "__main__":
-    while True:
-        main()
+    # Set RUN_WEB=1 to start Flask server; otherwise run CLI loop as before
+    if os.getenv("RUN_WEB") == "1" and app is not None:
+        app.run(debug=True)
+    else:
+        while True:
+            main()
