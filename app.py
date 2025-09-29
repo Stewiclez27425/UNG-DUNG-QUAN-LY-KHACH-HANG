@@ -1,20 +1,34 @@
 from colorama import Fore, Back, init
 import os
 from openpyxl import Workbook, load_workbook
+import pandas as pd
 
-#Create Excel
-wb=Workbook()
-wb.active.title="KhachHang"
-ws=wb.active
+def load_data():
+    # Load excel file if exists, else create a new workbook
+    wb=load_workbook(filename="ThongTinKhachHang.xlsx") if os.path.exists("ThongTinKhachHang.xlsx") else Workbook()
+    sheet=wb.active
 
-wb["A1"]="Mã KH"
-wb["B1"]="Họ Tên"
-wb["C1"]="Số ĐT"
-wb["D1"]="Địa Chỉ"
-wb["E1"]="Email"
+    #create header from first row
+    header = [cell.value for cell in sheet[1]]
 
-if not os.path.exists("KhachHang.xlsx"):
-    wb.save("KhachHang.xlsx")
+    #create list of dictionaries from excel file
+    data_rows = []
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        data_rows.append(dict(zip(header, row)))
+    #create dataframe from excel file
+    df = pd.DataFrame(data_rows)
+    return print(df)
+
+def create_file():
+    wb = Workbook()
+    ws = wb.active
+    ws['A1'] = 'Mã KH'
+    ws['B1'] = 'Họ Tên'
+    ws['C1'] = 'Số ĐT'
+    ws['D1'] = 'Email'
+    ws['E1'] = 'Địa Chỉ'
+    
+    wb.save("ThongTinKhachHang.xlsx")
 def main():
     
     init(autoreset=False)
@@ -31,7 +45,7 @@ def main():
     if choice == '1':
         pass
     elif choice == '2':
-        pass
+        load_data()
     elif choice == '3':
         pass
     elif choice == '4':
