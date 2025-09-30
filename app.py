@@ -11,6 +11,33 @@ except Exception:
     Flask = None
     render_template = None
 
+def ID_kh():
+    wb=load_workbook(filename="ThongTinKhachHang.xlsx")
+    sheet=wb.active
+    
+    #Rut ra danh sach ma khach hang
+    ma_kh_list = []
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        if row[0] is not None:
+            ma_kh_list.append(row[0])
+            
+    #tim ma khach hang lon nhat
+    if not ma_kh_list:
+        ID_kh = "DLT" + "0"*4 + "1"
+        return ID_kh
+    else:
+        max_id = 0
+        for ma_kh in ma_kh_list:
+            try:
+                num_part = int(ma_kh[3:])  # ma khach hang co dang DLT00001
+                if num_part > max_id:
+                    max_id = num_part
+            except ValueError:
+                continue  # Bỏ qua các mã không hợp lệ
+        new_id_num = max_id + 1
+        new_id = "DLT" + str(new_id_num).zfill(5)  # id luon co 5 chu so
+        return new_id
+
 def is_data_none():
     wb=load_workbook(filename="ThongTinKhachHang.xlsx")
     sheet=wb.active
@@ -74,7 +101,7 @@ def add_customer():
     #get next row
     next_row = sheet.max_row + 1
     print(Fore.CYAN + Back.BLACK + "\n ----------THÊM KHÁCH HÀNG----------")
-    ma_kh = input("Nhập mã khách hàng: ")
+    ma_kh = ID_kh()
     ho_ten = input("Nhập họ tên khách hàng: ")
     so_dt = input("Nhập số điện thoại khách hàng: ")
     dia_chi = input("Nhập địa chỉ khách hàng: ")
