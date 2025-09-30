@@ -1,289 +1,146 @@
 {% extends "base.html" %}
-{% block head %}
-    <title>Danh sách khách hàng</title>
-    <style>
-        :root { --bg:#0f172a; --panel:#111827; --panel-2:#0b1220; --muted:#94a3b8; --text:#e5e7eb; --brand:#6366f1; --brand-2:#8b5cf6; --accent:#06b6d4; --ok:#10b981; --warn:#f59e0b; --bad:#ef4444; }
-        body { background: linear-gradient(120deg, #0b1020, #0f172a 40%, #111827 100%); color: var(--text); }
-        .header-title { font-size: 22px; font-weight: 700; color: var(--text); }
-        .header-logo { display: flex; align-items: center; gap: 10px; margin-right: 18px; }
-        .header-logo .logo-box { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); box-shadow: 0 10px 30px rgba(99,102,241,0.35); color: #fff; display: flex; align-items: center; justify-content: center; }
-        .header { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; margin-left: -40px; margin-right: -40px; padding: 12px 40px; background: linear-gradient(180deg, #0b1020, #0e1426); border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.25); }
-        .search-filter-bar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
-        .search-input, .filter-select { padding: 10px 12px; border: 1px solid rgba(255,255,255,0.08); background: var(--panel); color: var(--text); border-radius: 10px; font-size: 14px; }
-        .add-customer-btn { padding: 10px 16px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; }
-        .add-customer-btn:hover { filter: brightness(1.08); }
-        .customers-table { width: 100%; background: linear-gradient(180deg, var(--panel), var(--panel-2)); border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.25); overflow: hidden; border: 1px solid rgba(255,255,255,0.06); }
-        .customers-table th { background: rgba(255,255,255,0.03); color: var(--muted); padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        .customers-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        .customers-table tr:hover { background: rgba(99,102,241,0.06); }
-        .customer-group-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.08); color: var(--muted); }
-        .group-potential { background: rgba(245, 158, 11, 0.1); color: var(--warn); }
-        .group-loyal { background: rgba(22, 163, 74, 0.1); color: var(--ok); }
-        .group-vip { background: rgba(220, 38, 38, 0.1); color: var(--bad); }
-        .group-active { background: rgba(16, 185, 129, 0.1); color: var(--ok); }
-        .group-inactive { background: rgba(107, 114, 128, 0.1); color: var(--muted); }
-        .customer-name { font-weight: 600; color: var(--text); }
-        .customer-name-link { text-decoration: none; color: inherit; }
-        .customer-name-link:hover .customer-name { color: var(--accent); text-decoration: underline; }
-        .customer-id { font-family: monospace; color: var(--muted); font-size: 13px; }
-        .amount { font-weight: 700; color: var(--accent); }
-        .last-purchase { color: var(--muted); font-size: 13px; }
-        .stats-summary { display: flex; gap: 14px; margin-bottom: 20px; }
-        .stat-card { background: linear-gradient(180deg, var(--panel), var(--panel-2)); padding: 16px; border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.25); flex: 1; border: 1px solid rgba(255,255,255,0.06); }
-        .stat-number { font-size: 22px; font-weight: 700; color: #e5e7eb; }
-        .stat-label { color: var(--muted); font-size: 12px; margin-top: 4px; text-transform: uppercase; letter-spacing: .08em; }
-        .action-buttons { display: flex; gap: 8px; margin-bottom: 20px; }
-        .action-buttons button { padding: 10px 16px; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; cursor: pointer; font-size: 14px; background: var(--panel); color: var(--text); }
-        .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); border: 0; }
-        .btn-success { background: linear-gradient(135deg, #10b981, #22c55e); border: 0; color: #052e1c; }
-        .btn-warning { background: linear-gradient(135deg, #f59e0b, #fbbf24); border: 0; color: #3a2500; }
-        .btn-danger { background: linear-gradient(135deg, #ef4444, #f87171); border: 0; }
-        .btn-secondary { background: transparent; color: var(--muted); border-style: dashed; }
-        .checkbox-cell { width: 40px; text-align: center; }
-        .checkbox-cell input[type="checkbox"] { transform: scale(1.2); }
-        .selected-info { background: rgba(99,102,241,0.08); padding: 12px; border-radius: 12px; margin-bottom: 16px; border: 1px dashed rgba(99,102,241,0.35); color: var(--text); }
-        .selected-count { font-weight: 700; color: var(--brand-2); }
-        .test-ribbon { position: fixed; right: 16px; bottom: 16px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.35); color: #10b981; padding: 10px 12px; border-radius: 12px; font-size: 12px; backdrop-filter: blur(6px); }
-    </style>
-{% endblock %}
+{% block title %}Dashboard Khách Hàng{% endblock %}
 
 {% block content %}
     <div class="header">
-        <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="display:flex; align-items:center; gap:16px;">
             <div class="header-logo">
                 <div class="logo-box" aria-label="Customers">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-                        <circle cx="9" cy="8" r="3" fill="#2563eb" opacity="0.9"></circle>
-                        <circle cx="16" cy="9" r="2.5" fill="#2563eb" opacity="0.6"></circle>
-                        <rect x="4" y="13" width="10" height="7" rx="3.5" fill="#2563eb" opacity="0.15"></rect>
-                        <rect x="12.5" y="13.5" width="7" height="6.5" rx="3.25" fill="#2563eb" opacity="0.12"></rect>
+                        <circle cx="9" cy="8" r="3" fill="#6366f1" opacity="0.9"></circle>
+                        <circle cx="16" cy="9" r="2.5" fill="#8b5cf6" opacity="0.6"></circle>
+                        <rect x="4" y="13" width="10" height="7" rx="3.5" fill="#6366f1" opacity="0.15"></rect>
+                        <rect x="12.5" y="13.5" width="7" height="6.5" rx="3.25" fill="#8b5cf6" opacity="0.12"></rect>
                     </svg>
                 </div>
-                <div class="header-title">Danh sách khách hàng</div>
+                <div class="header-title">Thông tin khách hàng</div>
             </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="color: #6b7280; font-size: 14px;">Tổng: {{ customers|length }} khách hàng</span>
+        <div class="header-actions">
+            <div class="customer-group customer-group-box group-{{ customer.status | default('inactive') }}">
+                {{ customer.status | default('inactive') | capitalize }}
+            </div>
+            <div class="user-box">
+                <span class="user-avatar">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="#6366f1"/><rect x="4" y="16" width="16" height="6" rx="3" fill="#6366f1" opacity=".2"/></svg>
+                </span>
+                Admin
+                <div class="user-dropdown">
+                    <a href="#" onclick="editUserInfo()">Chỉnh sửa thông tin</a>
+                    <a href="#" onclick="changePassword()">Đổi mật khẩu</a>
+                    <a href="#" onclick="logout()">Đăng xuất</a>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Thống kê tổng quan -->
-    <div class="stats-summary">
-        <div class="stat-card">
-            <div class="stat-number">{{ stats.total_customers }}</div>
-            <div class="stat-label">Tổng khách hàng</div>
+    <div class="action-bar">
+        <button class="btn btn-primary">Thêm mới</button>
+        <button class="btn btn-secondary">Cập nhật</button>
+        <button class="btn btn-info">Nhập dữ liệu</button>
+        <button class="btn btn-success">Xuất dữ liệu</button>
+        <button class="btn btn-danger">Xóa Dữ Liệu</button>
+    </div>
+
+    <div class="content">
+        <div class="info">
+            <h3>Thông tin cá nhân <button class="edit-btn">Sửa</button></h3>
+            <table class="info-table">
+                <tr>
+                    <td class="label">Tên khách hàng:</td>
+                    <td>
+                        {{ customer.name or 'Chưa rõ' }}
+                        {% if customer.group == 'loyal' %}<span class="customer-group-box group-loyal">Thân Thiết</span>{% endif %}
+                        {% if customer.group == 'vip' %}<span class="customer-group-box group-vip">Quan trọng</span>{% endif %}
+                        {% if customer.group == 'potential' %}<span class="customer-group-box group-potential">Tiềm năng</span>{% endif %}
+                    </td>
+                </tr>
+                <tr><td class="label">Ngày sinh:</td><td>{{ customer.dob or '—' }}</td></tr>
+                <tr><td class="label">Số điện thoại:</td><td>{{ customer.phone or '—' }}</td></tr>
+                <tr><td class="label">Email:</td><td>{{ customer.email or '—' }}</td></tr>
+                <tr><td class="label">Địa chỉ:</td><td>{{ customer.address or '—' }}</td></tr>
+                <tr><td class="label">Mã KH:</td><td>{{ customer.code or '—' }}</td></tr>
+                <tr><td class="label">Tổng tiền mua:</td><td>{{ customer.total or customer.total_amount or '0đ' }}</td></tr>
+                <tr><td class="label">Ngày cuối mua:</td><td>{{ customer.last_purchase or 'Chưa có' }}</td></tr>
+            </table>
         </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ stats.active_customers }}</div>
-            <div class="stat-label">Đang giao dịch</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ stats.active_orders }}</div>
-            <div class="stat-label">Đơn hàng hoạt động</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ stats.active_amount }}</div>
-            <div class="stat-label">Doanh thu</div>
+
+        <div class="history" style="flex: 2 1 600px; min-width: 600px;">
+            <h3>Lịch sử mua hàng</h3>
+            <table class="history-table">
+                <tr>
+                    <th>Mã đơn hàng</th>
+                    <th>Tên KH</th>
+                    <th>Xuất kho</th>
+                    <th>Giá trị</th>
+                    <th>Ngày ghi nhận</th>
+                    <th>Trạng thái</th>
+                </tr>
+                {% for o in orders %}
+                <tr>
+                    <td>{{ o.code }}</td>
+                    <td>{{ o.customer }}</td>
+                    <td>{{ o.export_status }}</td>
+                    <td>{{ o.value }}</td>
+                    <td>{{ o.date }}</td>
+                    <td class="{{ 'history-statusfinish' if o.status=='done' else 'history-statusunfinish' }}">{{ o.status_label }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div style="margin-bottom:12px; color:var(--muted); font-size:14px;">Hiển thị {{ orders|length }}/{{ orders|length }} kết quả</div>
         </div>
     </div>
 
-    <!-- Thanh tìm kiếm và lọc -->
-    <div class="search-filter-bar">
-        <input type="text" class="search-input" placeholder="Tìm kiếm theo tên, mã KH..." id="searchInput">
-        <select class="filter-select" id="groupFilter">
-            <option value="">Tất cả nhóm</option>
-            <option value="potential">Tiềm năng</option>
-            <option value="loyal">Thân thiết</option>
-            <option value="vip">Quan trọng</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-        </select>
-        <button class="add-customer-btn" onclick="addNewCustomer()">+ Thêm khách hàng</button>
-        <button class="add-customer-btn" onclick="importData()">Nhập dữ liệu</button>
-        <button class="add-customer-btn" onclick="exportAll()">Xuất tất cả</button>
-    </div>
+    <div class="test-ribbon" id="test-ribbon">Đang chạy kiểm thử…</div>
+{% endblock %}
 
-    <!-- Thông tin khách hàng đã chọn -->
-    <div id="selectedInfo" class="selected-info" style="display: none;">
-        <span class="selected-count" id="selectedCount">0</span> khách hàng đã được chọn
-        <div class="action-buttons" style="margin-top: 8px;">
-            <button class="btn-primary" onclick="editSelected()">Chỉnh sửa</button>
-            <button class="btn-warning" onclick="changeGroupSelected()">Đổi nhóm</button>
-            <button class="btn-danger" onclick="deleteSelected()">Xóa</button>
-            <button class="btn-secondary" onclick="exportSelected()">Xuất dữ liệu</button>
-        </div>
-    </div>
-
-    <!-- Bảng danh sách khách hàng -->
-    {% if customers %}
-    <table class="customers-table">
-        <thead>
-            <tr>
-                <th class="checkbox-cell">
-                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
-                </th>
-                <th>Mã KH</th>
-                <th>Tên khách hàng</th>
-                <th>Nhóm khách hàng</th>
-                <th>Trạng thái</th>
-                <th>Lần cuối mua hàng</th>
-                <th>Tổng tiền đã mua</th>
-            </tr>
-        </thead>
-        <tbody id="customersTableBody">
-            {% for customer in customers %}
-            <tr data-group="{{ customer.group }}" data-status="{{ customer.status }}" data-name="{{ customer.name|lower }}">
-                <td class="checkbox-cell">
-                    <input type="checkbox" class="customer-checkbox" value="{{ customer.code }}" onchange="updateSelectedInfo()">
-                </td>
-                <td><span class="customer-id">{{ customer.code }}</span></td>
-                <td>
-                    <a href="/customer-dashboard?code={{ customer.code }}" class="customer-name-link">
-                        <span class="customer-name">{{ customer.name }}</span>
-                    </a>
-                </td>
-                <td>
-                    <span class="customer-group-badge group-{{ customer.group }}">
-                        {% if customer.group == 'potential' %}Tiềm năng
-                        {% elif customer.group == 'loyal' %}Thân thiết
-                        {% elif customer.group == 'vip' %}Quan trọng
-                        {% endif %}
-                    </span>
-                </td>
-                <td>
-                    <span class="customer-group-badge group-{{ customer.status }}">
-                        {% if customer.status == 'active' %}Active
-                        {% elif customer.status == 'inactive' %}Inactive
-                        {% endif %}
-                    </span>
-                </td>
-                <td><span class="last-purchase">{{ customer.last_purchase or 'Chưa có' }}</span></td>
-                <td><span class="amount">{{ customer.total_amount or '0đ' }}</span></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color: var(--muted);">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <h3 style="color:#e5e7eb;">Chưa có dữ liệu khách hàng</h3>
-        <p style="color: var(--muted);">Hãy thêm khách hàng đầu tiên để bắt đầu quản lý.</p>
-    </div>
-    {% endif %}
-
-    <script>
-        // Smoke tests DOM cho trang danh sách (tự động)
-        (function(){
-            var ribbon = document.createElement('div');
-            ribbon.className = 'test-ribbon';
-            ribbon.id = 'test-ribbon';
-            ribbon.textContent = 'Đang chạy kiểm thử giao diện…';
-            document.body.appendChild(ribbon);
-            var checks = [];
-            function t(n, c){ checks.push({n:n, ok:!!c}); }
-            t('Header tồn tại', document.querySelector('.header'));
-            t('Bảng khách hàng', document.querySelector('.customers-table'));
-            t('Thanh tìm kiếm', document.querySelector('#searchInput'));
-            t('Bộ lọc nhóm', document.querySelector('#groupFilter'));
-            var ok = checks.every(function(i){return i.ok});
-            if (ok) {
-                ribbon.style.background = 'rgba(16,185,129,0.12)';
-                ribbon.style.borderColor = 'rgba(16,185,129,0.45)';
-                ribbon.style.color = '#10b981';
-                ribbon.textContent = 'Kiểm thử giao diện: PASSED ('+checks.length+' kiểm tra)';
-            } else {
-                ribbon.style.background = 'rgba(239,68,68,0.12)';
-                ribbon.style.borderColor = 'rgba(239,68,68,0.45)';
-                ribbon.style.color = '#ef4444';
-                ribbon.textContent = 'Kiểm thử giao diện: FAILED';
-                console.error('UI tests failed:', checks);
-            }
-        })();
-
-        // Tìm kiếm và lọc khách hàng
-        document.getElementById('searchInput').addEventListener('input', filterCustomers);
-        document.getElementById('groupFilter').addEventListener('change', filterCustomers);
-
-        function filterCustomers() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const groupFilter = document.getElementById('groupFilter').value;
-            const rows = document.querySelectorAll('#customersTableBody tr');
-
-            rows.forEach(row => {
-                const name = row.dataset.name;
-                const group = row.dataset.group;
-                const status = row.dataset.status;
-                
-                const matchesSearch = name.includes(searchTerm);
-                const matchesGroup = !groupFilter || group === groupFilter || status === groupFilter;
-                
-                row.style.display = (matchesSearch && matchesGroup) ? '' : 'none';
-            });
+{% block scripts %}
+<script>
+    // User functions
+    function editUserInfo() {
+        alert('Tính năng chỉnh sửa thông tin người dùng đang được phát triển...');
+    }
+    
+    function changePassword() {
+        var newPassword = prompt('Nhập mật khẩu mới:');
+        if (newPassword && newPassword.length >= 6) {
+            alert('Đổi mật khẩu thành công!');
+        } else if (newPassword) {
+            alert('Mật khẩu phải có ít nhất 6 ký tự!');
         }
-
-
-        function addNewCustomer() {
-            alert('Thêm khách hàng mới');
+    }
+    
+    function logout() {
+        if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+            alert('Đăng xuất thành công! Chuyển về trang đăng nhập...');
+            // window.location.href = '/login';
         }
+    }
 
-        function updateSelectedInfo() {
-            const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
-            const count = checkboxes.length;
-            const selectedInfo = document.getElementById('selectedInfo');
-            const selectedCount = document.getElementById('selectedCount');
-            
-            selectedCount.textContent = count;
-            selectedInfo.style.display = count > 0 ? 'block' : 'none';
+    // UI Tests
+    (function(){
+        var checks = [];
+        function t(n,c){ checks.push({n:n, ok:!!c}); }
+        t('Sidebar', document.querySelector('.sidebar'));
+        t('Header', document.querySelector('.header'));
+        t('Bảng lịch sử', document.querySelector('.history-table'));
+        t('User dropdown', document.querySelector('.user-dropdown'));
+        var hasCustomer = parseInt('{{ 1 if customer else 0 }}', 10);
+        t('Có dữ liệu customer', hasCustomer === 1);
+        var ribbon = document.getElementById('test-ribbon');
+        var ok = checks.every(function(i){return i.ok});
+        if (ok) {
+            ribbon.style.background = 'rgba(16,185,129,0.12)';
+            ribbon.style.borderColor = 'rgba(16,185,129,0.45)';
+            ribbon.style.color = '#10b981';
+            ribbon.textContent = 'Kiểm thử: PASSED ('+checks.length+' checks)';
+        } else {
+            ribbon.style.background = 'rgba(239,68,68,0.12)';
+            ribbon.style.borderColor = 'rgba(239,68,68,0.45)';
+            ribbon.style.color = '#ef4444';
+            ribbon.textContent = 'Kiểm thử: FAILED';
+            console.error('UI tests failed:', checks);
         }
-
-        function toggleSelectAll() {
-            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-            const checkboxes = document.querySelectorAll('.customer-checkbox');
-            
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAllCheckbox.checked;
-            });
-            updateSelectedInfo();
-        }
-
-        function editSelected() {
-            const selected = getSelectedCustomers();
-            alert(`Chỉnh sửa ${selected.length} khách hàng: ${selected.join(', ')}`);
-        }
-
-        function changeGroupSelected() {
-            const selected = getSelectedCustomers();
-            alert(`Đổi nhóm ${selected.length} khách hàng: ${selected.join(', ')}`);
-        }
-
-        function deleteSelected() {
-            const selected = getSelectedCustomers();
-            if (confirm(`Xóa ${selected.length} khách hàng: ${selected.join(', ')}?`)) {
-                alert('Đã xóa khách hàng');
-            }
-        }
-
-        function exportSelected() {
-            const selected = getSelectedCustomers();
-            alert(`Xuất dữ liệu ${selected.length} khách hàng: ${selected.join(', ')}`);
-        }
-
-        function importData() {
-            alert('Nhập dữ liệu từ file Excel');
-        }
-
-        function exportAll() {
-            alert('Xuất tất cả dữ liệu khách hàng');
-        }
-
-        function getSelectedCustomers() {
-            const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
-            return Array.from(checkboxes).map(cb => cb.value);
-        }
-    </script>
+    })();
+</script>
 {% endblock %}
