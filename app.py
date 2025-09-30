@@ -4,42 +4,13 @@ from openpyxl import Workbook, load_workbook
 import pandas as pd
 from pathlib import Path
 import time
-from datetime import datetime
 # Web dependencies (optional, only used when RUN_WEB=1)
 try:
-    from flask import Flask, render_template
+    from flask import Flask, render_template, request
 except Exception:
     Flask = None
     render_template = None
 
-def find_customer():
-    try:
-        wb=load_workbook(filename="ThongTinKhachHang.xlsx")
-        sheet=wb.active
-        
-        print(Fore.CYAN + Back.BLACK + "\n ----------TÌM KIẾM KHÁCH HÀNG----------")
-        search_term = input("Nhập mã khách hàng hoặc họ tên khách hàng cần tìm: ").strip().lower()
-        
-        found = False
-        for row in sheet.iter_rows(min_row=2, values_only=True):
-            ma_kh = str(row[0]) if row[0] is not None else ""
-            ho_ten = row[1] if row[1] is not None else ""
-            if search_term in ma_kh.lower() or search_term in ho_ten.lower():
-                print(Fore.GREEN + Back.BLACK + "\nKhách hàng tìm thấy:")
-                print(Fore.YELLOW + Back.BLACK + f"Mã KH: {row[0]}")
-                print(Fore.YELLOW + Back.BLACK + f"Họ Tên: {row[1]}")
-                print(Fore.YELLOW + Back.BLACK + f"Số ĐT: {row[2]}")
-                print(Fore.YELLOW + Back.BLACK + f"Email: {row[3]}")
-                print(Fore.YELLOW + Back.BLACK + f"Địa Chỉ: {row[4]}")
-                found = True
-                break
-        if not found:
-            print(Fore.RED + Back.BLACK + "Không tìm thấy khách hàng với thông tin đã nhập.")
-    except FileNotFoundError:
-        print(Fore.RED + Back.BLACK + "Chưa có file dữ liệu khách hàng. Vui lòng thêm khách hàng trước!!!")
-    except Exception as e:
-        print(Fore.RED + Back.BLACK + f"Đã xảy ra lỗi: {e}")
-    
 def ID_kh():
     wb=load_workbook(filename="ThongTinKhachHang.xlsx")
     sheet=wb.active
@@ -64,7 +35,7 @@ def ID_kh():
             except ValueError:
                 continue  # Bỏ qua các mã không hợp lệ
         new_id_num = max_id + 1
-        new_id = "DLT" + str(new_id_num).zfill(5)  # id luon co 5 chu so
+        new_id = "DLU" + str(new_id_num).zfill(5)  # id luon co 5 chu so
         return new_id
 
 def is_data_none():
@@ -244,6 +215,63 @@ def load_all_customers_for_web() -> list:
     except Exception:
         return []
 
+def load_customer_by_code_for_web(code: str) -> dict | None:
+    """Tải 1 khách hàng theo mã từ Excel (phục vụ trang web)."""
+    try:
+        if not code:
+            return None
+        excel_path = Path("ThongTinKhachHang.xlsx")
+        if not excel_path.exists():
+            return None
+
+        wb = load_workbook(filename=str(excel_path))
+        sheet = wb.active
+        header = [cell.value for cell in sheet[1]]
+
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            if not row or all(cell is None for cell in row):
+                continue
+            raw = dict(zip(header, row))
+            row_code = (
+                raw.get("Mã KH")
+                or raw.get("Ma KH")
+                or raw.get("Code")
+                or ""
+            )
+            if str(row_code) == str(code):
+                customer = {
+                    "name": raw.get("Họ Tên") or raw.get("Ho Ten") or raw.get("Ten") or "",
+                    "dob": raw.get("Ngày sinh") or raw.get("Ngay Sinh") or "",
+                    "phone": raw.get("Số ĐT") or raw.get("So DT") or raw.get("SĐT") or raw.get("Phone") or "",
+                    "email": raw.get("Email") or "",
+                    "address": raw.get("Địa Chỉ") or raw.get("Dia Chi") or raw.get("Address") or "",
+                    "code": row_code,
+                    "total": raw.get("Tổng tiền mua") or raw.get("Tong Tien Mua") or "0đ",
+                    "last_purchase": raw.get("Ngày cuối mua") or raw.get("Ngay Cuoi Mua") or "",
+                }
+
+                # Xác định group/status giống logic danh sách
+                total_amount_str = str(customer["total"]).replace("đ", "").replace(",", "")
+                try:
+                    total_amount = float(total_amount_str) if total_amount_str else 0
+                except ValueError:
+                    total_amount = 0
+
+                if total_amount >= 10000000:
+                    customer["group"] = "vip"
+                elif total_amount >= 5000000:
+                    customer["group"] = "loyal"
+                else:
+                    customer["group"] = "potential"
+
+                last_purchase = customer["last_purchase"]
+                customer["status"] = "active" if last_purchase and last_purchase != "Chưa có" else "inactive"
+
+                return customer
+        return None
+    except Exception:
+        return None
+
 def get_customer_stats(customers: list) -> dict:
     """Tính toán thống kê khách hàng"""
     active_customers = len([c for c in customers if c["status"] == "active"])
@@ -275,19 +303,36 @@ app = Flask(__name__) if Flask else None
 if app:
     @app.route("/customer-dashboard")
     def customer_dashboard():
-        raw = load_first_customer_for_web()
-        customer = None
-        if raw:
-            customer = {
-                "name": raw.get("Họ Tên") or raw.get("Ho Ten") or raw.get("Ten") or "",
-                "dob": raw.get("Ngày sinh") or raw.get("Ngay Sinh") or "",
-                "phone": raw.get("Số ĐT") or raw.get("So DT") or raw.get("SĐT") or raw.get("Phone") or "",
-                "email": raw.get("Email") or "",
-                "address": raw.get("Địa Chỉ") or raw.get("Dia Chi") or raw.get("Address") or "",
-                "code": raw.get("Mã KH") or raw.get("Ma KH") or raw.get("Code") or "",
-                "total": raw.get("Tổng tiền mua") or raw.get("Tong Tien Mua") or "",
-                "last_purchase": raw.get("Ngày cuối mua") or raw.get("Ngay Cuoi Mua") or "",
-            }
+        code = request.args.get("code") if request else None
+        customer = load_customer_by_code_for_web(code) if code else None
+        if not customer:
+            raw = load_first_customer_for_web()
+            if raw:
+                customer = {
+                    "name": raw.get("Họ Tên") or raw.get("Ho Ten") or raw.get("Ten") or "",
+                    "dob": raw.get("Ngày sinh") or raw.get("Ngay Sinh") or "",
+                    "phone": raw.get("Số ĐT") or raw.get("So DT") or raw.get("SĐT") or raw.get("Phone") or "",
+                    "email": raw.get("Email") or "",
+                    "address": raw.get("Địa Chỉ") or raw.get("Dia Chi") or raw.get("Address") or "",
+                    "code": raw.get("Mã KH") or raw.get("Ma KH") or raw.get("Code") or "",
+                    "total": raw.get("Tổng tiền mua") or raw.get("Tong Tien Mua") or "0đ",
+                    "last_purchase": raw.get("Ngày cuối mua") or raw.get("Ngay Cuoi Mua") or "",
+                }
+
+                # Bổ sung group/status để đồng bộ với UI
+                total_amount_str = str(customer["total"]).replace("đ", "").replace(",", "")
+                try:
+                    total_amount = float(total_amount_str) if total_amount_str else 0
+                except ValueError:
+                    total_amount = 0
+                if total_amount >= 10000000:
+                    customer["group"] = "vip"
+                elif total_amount >= 5000000:
+                    customer["group"] = "loyal"
+                else:
+                    customer["group"] = "potential"
+                last_purchase = customer["last_purchase"]
+                customer["status"] = "active" if last_purchase and last_purchase != "Chưa có" else "inactive"
 
         sample_orders = [
             {
@@ -370,8 +415,6 @@ def main():
             print(Fore.GREEN + Back.BLACK + "Tạo file thành công.")
         elif os.path.exists("ThongTinKhachHang.xlsx") and is_data_none() == True:
             print(Fore.YELLOW + Back.BLACK + "File dữ liệu khách hàng hiện tại đang trống. Vui lòng thêm khách hàng.")
-        else:
-            find_customer()
     elif choice == '4':
         pass
     elif choice == '5':
