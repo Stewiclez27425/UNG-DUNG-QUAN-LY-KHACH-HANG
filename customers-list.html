@@ -44,6 +44,8 @@
         .group-inactive { background: rgba(107, 114, 128, 0.1); color: var(--group-inactive); }
         
         .customer-name { font-weight: 600; color: var(--text); }
+        .customer-name-link { text-decoration: none; color: inherit; }
+        .customer-name-link:hover .customer-name { color: var(--color-primary); text-decoration: underline; }
         .customer-id { font-family: monospace; color: #6b7280; font-size: 13px; }
         .amount { font-weight: 600; color: var(--color-support); }
         .last-purchase { color: #6b7280; font-size: 13px; }
@@ -129,8 +131,8 @@
             <option value="inactive">Inactive</option>
         </select>
         <button class="add-customer-btn" onclick="addNewCustomer()">+ Thêm khách hàng</button>
-        <button class="btn-success" onclick="importData()">Nhập dữ liệu</button>
-        <button class="btn-warning" onclick="exportAll()">Xuất tất cả</button>
+        <button class="add-customer-btn" onclick="importData()">Nhập dữ liệu</button>
+        <button class="add-customer-btn" onclick="exportAll()">Xuất tất cả</button>
     </div>
 
     <!-- Thông tin khách hàng đã chọn -->
@@ -158,7 +160,6 @@
                 <th>Trạng thái</th>
                 <th>Lần cuối mua hàng</th>
                 <th>Tổng tiền đã mua</th>
-                <th>Thao tác</th>
             </tr>
         </thead>
         <tbody id="customersTableBody">
@@ -168,7 +169,11 @@
                     <input type="checkbox" class="customer-checkbox" value="{{ customer.code }}" onchange="updateSelectedInfo()">
                 </td>
                 <td><span class="customer-id">{{ customer.code }}</span></td>
-                <td><span class="customer-name">{{ customer.name }}</span></td>
+                <td>
+                    <a href="/customer-dashboard?code={{ customer.code }}" class="customer-name-link">
+                        <span class="customer-name">{{ customer.name }}</span>
+                    </a>
+                </td>
                 <td>
                     <span class="customer-group-badge group-{{ customer.group }}">
                         {% if customer.group == 'potential' %}Tiềm năng
@@ -186,10 +191,6 @@
                 </td>
                 <td><span class="last-purchase">{{ customer.last_purchase or 'Chưa có' }}</span></td>
                 <td><span class="amount">{{ customer.total_amount or '0đ' }}</span></td>
-                <td>
-                    <button onclick="viewCustomer('{{ customer.code }}')" style="padding: 4px 8px; background: var(--color-primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 4px;">Xem</button>
-                    <button onclick="editCustomer('{{ customer.code }}')" style="padding: 4px 8px; background: var(--color-support); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Sửa</button>
-                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -229,13 +230,6 @@
             });
         }
 
-        function viewCustomer(customerCode) {
-            window.location.href = `/customer-dashboard?code=${customerCode}`;
-        }
-
-        function editCustomer(customerCode) {
-            alert(`Chỉnh sửa khách hàng: ${customerCode}`);
-        }
 
         function addNewCustomer() {
             alert('Thêm khách hàng mới');
