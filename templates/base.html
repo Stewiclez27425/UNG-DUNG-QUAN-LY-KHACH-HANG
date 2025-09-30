@@ -1,3 +1,13 @@
+<!-- ========================================
+     BASE TEMPLATE LAYOUT
+     Nhóm: Template System
+     Mô tả: Template cơ sở cho toàn bộ ứng dụng
+     Chức năng:
+     - Định nghĩa cấu trúc HTML cơ bản
+     - Load CSS và fonts
+     - Include sidebar component
+     - Cung cấp blocks cho các trang con
+     ======================================== -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -9,13 +19,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     {% block head %}{% endblock %}
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* Ẩn test ribbon khỏi giao diện người dùng */
+        .test-ribbon {
+            display: none !important;
+            visibility: hidden !important;
+        }
+    </style>
 </head>
 <body>
-    <!-- Preloader -->
+    <!-- ========================================
+         PRELOADER COMPONENT
+         Nhóm: UI Components
+         Mô tả: Hiển thị loading khi trang đang tải
+         ======================================== -->
     <div id="preloader">
         <div class="loader"></div>
     </div>
 
+    <!-- ========================================
+         MAIN LAYOUT CONTAINER
+         Nhóm: Layout System
+         Mô tả: Container chính chứa sidebar và content
+         ======================================== -->
     <div class="layout">
         {% include 'sidebar.html' %}
 
@@ -24,9 +50,18 @@
         </main>
     </div>
 
-    <!-- Test ribbon -->
+    <!-- ========================================
+         TEST RIBBON COMPONENT
+         Nhóm: Quality Assurance
+         Mô tả: Hiển thị trạng thái kiểm thử giao diện
+         ======================================== -->
     <div class="test-ribbon" id="test-ribbon">UI: OK</div>
 
+    <!-- ========================================
+         GLOBAL JAVASCRIPT
+         Nhóm: Client-side Logic
+         Mô tả: Script chung cho toàn bộ ứng dụng
+         ======================================== -->
     <script>
         // Hide preloader khi trang load xong
         window.addEventListener('load', function(){
