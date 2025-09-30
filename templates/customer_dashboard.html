@@ -3,23 +3,13 @@
 
 {% block content %}
     <div class="header">
-        <div style="display:flex; align-items:center; gap:16px;">
-            <div class="header-logo">
-                <div class="logo-box" aria-label="Customers">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-                        <circle cx="9" cy="8" r="3" fill="#6366f1" opacity="0.9"></circle>
-                        <circle cx="16" cy="9" r="2.5" fill="#8b5cf6" opacity="0.6"></circle>
-                        <rect x="4" y="13" width="10" height="7" rx="3.5" fill="#6366f1" opacity="0.15"></rect>
-                        <rect x="12.5" y="13.5" width="7" height="6.5" rx="3.25" fill="#8b5cf6" opacity="0.12"></rect>
-                    </svg>
-                </div>
-                <div class="header-title">Thông tin khách hàng</div>
-            </div>
+        <div class="header-left">
+            <span class="header-title">Thông tin khách hàng</span>
+            <span class="header-status group-{{ customer.status | default('inactive') }}">
+                {{ customer.status | default('inactive') | capitalize }}
+            </span>
         </div>
         <div class="header-actions">
-            <div class="customer-group customer-group-box group-{{ customer.status | default('inactive') }}">
-                {{ customer.status | default('inactive') | capitalize }}
-            </div>
             <div class="user-box">
                 <span class="user-avatar">
                     <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="#6366f1"/><rect x="4" y="16" width="16" height="6" rx="3" fill="#6366f1" opacity=".2"/></svg>
