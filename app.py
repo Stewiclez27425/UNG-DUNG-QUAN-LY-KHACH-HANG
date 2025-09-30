@@ -35,7 +35,7 @@ def ID_kh():
             except ValueError:
                 continue  # Bỏ qua các mã không hợp lệ
         new_id_num = max_id + 1
-        new_id = "DLT" + str(new_id_num).zfill(5)  # id luon co 5 chu so
+        new_id = "DLU" + str(new_id_num).zfill(5)  # id luon co 5 chu so
         return new_id
 
 def is_data_none():
@@ -111,20 +111,36 @@ def add_customer():
     new_customer.append(so_dt)
     new_customer.append(email)
     new_customer.append(dia_chi)
+    Ten_truong = ["Mã KH", "Họ Tên", "Số ĐT", "Email", "Địa Chỉ"]
     
+    while True:
+        for i in range(len(new_customer)):
+            if new_customer[i] == "":
+                print(Fore.RED + Back.BLACK + f"Trường '{Ten_truong[i]}' không được để trống. Vui lòng nhập lại.")
+                if Ten_truong[i] == "Họ Tên":
+                    ho_ten = input("Nhập họ tên khách hàng: ")
+                    new_customer[i] = ho_ten
+                elif Ten_truong[i] == "Số ĐT":
+                    so_dt = input("Nhập số điện thoại khách hàng: ")
+                    new_customer[i] = so_dt
+                elif Ten_truong[i] == "Email":
+                    email = input("Nhập email khách hàng: ")
+                    new_customer[i] = email
+                elif Ten_truong[i] == "Địa Chỉ":
+                    dia_chi = input("Nhập địa chỉ khách hàng: ")
+                    new_customer[i] = dia_chi
+        if all(value != "" for value in new_customer):
+            break
     for col, value in enumerate(new_customer, start=1):
-        if value == "":
-            return print(Fore.RED + Back.BLACK + "Vui lòng nhập đầy đủ thông tin khách hàng!!!")
-        else:
-            sheet.cell(row=next_row, column=col, value=str(value))
+        sheet.cell(row=next_row, column=col, value=str(value))
             
     wb.save("ThongTinKhachHang.xlsx")
     
     return print(Fore.GREEN + Back.BLACK + "Thêm khách hàng thành công.")
     
-########################
+#########################
 # Flask web integration #
-########################
+#########################
 
 def load_first_customer_for_web() -> dict | None:
     try:
@@ -190,6 +206,9 @@ if app:
             orders=sample_orders,
         )
 
+##########################
+# HAM CHINH CHUONG TRINH #
+##########################
 def main():
     
     init(autoreset=False)
@@ -220,7 +239,13 @@ def main():
         else:
             show_customer_information()
     elif choice == '3':
-        pass
+        if not os.path.exists("ThongTinKhachHang.xlsx"):
+            print(Fore.YELLOW + Back.BLACK + "Chưa có file dữ liệu khách hàng. Đang tạo file...")
+            time.sleep(1)
+            create_file()
+            print(Fore.GREEN + Back.BLACK + "Tạo file thành công.")
+        elif os.path.exists("ThongTinKhachHang.xlsx") and is_data_none() == True:
+            print(Fore.YELLOW + Back.BLACK + "File dữ liệu khách hàng hiện tại đang trống. Vui lòng thêm khách hàng.")
     elif choice == '4':
         pass
     elif choice == '5':
