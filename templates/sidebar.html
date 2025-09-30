@@ -12,11 +12,11 @@
     <!-- Brand Section - Logo và tên ứng dụng -->
     <div class="brand">
         <div class="brand-logo"></div>
-        <div class="brand-name">QLKH</div>
+        <div class="brand-name">QLKH</div>  
     </div>
     
     <!-- Main Navigation Menu -->
-    <div class="menu-group">Danh mục</div>
+    <h3 class="menu-group">Danh mục</h3>
     <nav class="menu">
         <a href="/" class="{% if active=='overview' %}active{% endif %}">Tổng quan</a>
         <a href="/orders" class="{% if active=='orders' %}active{% endif %}">Đơn hàng</a>
@@ -28,10 +28,16 @@
     </nav>
     
     <!-- Quick Actions Menu - Các tác vụ thường dùng -->
-    <div class="menu-group">Tác vụ nhanh</div>
+    <h3 class="menu-group">Tác vụ nhanh</h3>
     <div class="menu">
         <a href="#" id="qa-new-order">Tạo đơn hàng mới</a>
         <a href="#" id="qa-new-product">Thêm sản phẩm mới</a>
         <a href="/reports" id="qa-view-report">Xem báo cáo chi tiết</a>
+    </div>
+    
+    <!-- Mini Credit Section -->
+    <div class="mini-credit">
+        <p>&copy; 2025 SPxDLT10</p>
+        <p>Developed with ❤️</p>
     </div>
 </aside>
