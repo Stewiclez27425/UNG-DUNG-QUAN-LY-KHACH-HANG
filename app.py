@@ -12,6 +12,34 @@ except Exception:
     Flask = None
     render_template = None
 
+def find_customer():
+    try:
+        wb=load_workbook(filename="ThongTinKhachHang.xlsx")
+        sheet=wb.active
+        
+        print(Fore.CYAN + Back.BLACK + "\n ----------TÌM KIẾM KHÁCH HÀNG----------")
+        search_term = input("Nhập mã khách hàng hoặc họ tên khách hàng cần tìm: ").strip().lower()
+        
+        found = False
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            ma_kh = str(row[0]) if row[0] is not None else ""
+            ho_ten = row[1] if row[1] is not None else ""
+            if search_term in ma_kh.lower() or search_term in ho_ten.lower():
+                print(Fore.GREEN + Back.BLACK + "\nKhách hàng tìm thấy:")
+                print(Fore.YELLOW + Back.BLACK + f"Mã KH: {row[0]}")
+                print(Fore.YELLOW + Back.BLACK + f"Họ Tên: {row[1]}")
+                print(Fore.YELLOW + Back.BLACK + f"Số ĐT: {row[2]}")
+                print(Fore.YELLOW + Back.BLACK + f"Email: {row[3]}")
+                print(Fore.YELLOW + Back.BLACK + f"Địa Chỉ: {row[4]}")
+                found = True
+                break
+        if not found:
+            print(Fore.RED + Back.BLACK + "Không tìm thấy khách hàng với thông tin đã nhập.")
+    except FileNotFoundError:
+        print(Fore.RED + Back.BLACK + "Chưa có file dữ liệu khách hàng. Vui lòng thêm khách hàng trước!!!")
+    except Exception as e:
+        print(Fore.RED + Back.BLACK + f"Đã xảy ra lỗi: {e}")
+    
 def ID_kh():
     wb=load_workbook(filename="ThongTinKhachHang.xlsx")
     sheet=wb.active
@@ -36,7 +64,7 @@ def ID_kh():
             except ValueError:
                 continue  # Bỏ qua các mã không hợp lệ
         new_id_num = max_id + 1
-        new_id = "DLU" + str(new_id_num).zfill(5)  # id luon co 5 chu so
+        new_id = "DLT" + str(new_id_num).zfill(5)  # id luon co 5 chu so
         return new_id
 
 def is_data_none():
@@ -342,6 +370,8 @@ def main():
             print(Fore.GREEN + Back.BLACK + "Tạo file thành công.")
         elif os.path.exists("ThongTinKhachHang.xlsx") and is_data_none() == True:
             print(Fore.YELLOW + Back.BLACK + "File dữ liệu khách hàng hiện tại đang trống. Vui lòng thêm khách hàng.")
+        else:
+            find_customer()
     elif choice == '4':
         pass
     elif choice == '5':
