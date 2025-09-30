@@ -1,115 +1,498 @@
+<!-- ========================================
+     DASHBOARD OVERVIEW PAGE
+     Nhóm: Business Intelligence
+     Mô tả: Trang tổng quan kinh doanh với KPI và biểu đồ
+     Chức năng:
+     - Hiển thị KPI chính
+     - Biểu đồ doanh thu và xu hướng
+     - Bảng xếp hạng sản phẩm/khách hàng
+     - Cảnh báo và thông báo
+     ======================================== -->
 {% extends "base.html" %}
+{% block title %}Tổng quan bán hàng{% endblock %}
+
 {% block head %}
-    <title>Dashboard Khách Hàng</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
     <style>
-        :root { --color-primary:#2563eb; --color-accent:#06b6d4; --color-support:#16a34a; --surface:#f8fafc; --surface-soft:#f1f5f9; --border:#e6eef7; --text:#1f2937; }
-        .header-title { font-size: 22px; font-weight: 700; color: var(--text); }
-        .header-logo { display:flex; align-items:center; gap:10px; margin-right:18px; }
-        .header-logo .logo-box { width:36px; height:36px; border-radius:8px; background:var(--surface-soft); display:flex; align-items:center; justify-content:center; color:var(--color-primary); }
-        .user-box { display:flex; align-items:center; background:var(--surface-soft); border:1px solid var(--border); border-radius:20px; padding:6px 14px 6px 8px; font-size:15px; font-weight:500; color:var(--color-primary); box-shadow:0 4px 14px rgba(37,99,235,.12); position:relative; z-index:2; cursor:pointer; backdrop-filter:saturate(160%) blur(4px); }
-        .user-box:hover .user-dropdown { display:block; }
-        .user-dropdown { display:none; position:absolute; top:44px; right:0; background:#fff; border:1px solid #e0e0e0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.08); min-width:180px; font-size:15px; color:var(--color-primary); padding:8px 0; z-index:1001; }
-        .user-dropdown a { display:block; padding:10px 22px; color:var(--color-primary); text-decoration:none; transition:background .2s, color .2s; }
-        .user-dropdown a:hover { background:var(--surface); color:#1e40af; }
-        .user-avatar { width:32px; height:32px; border-radius:50%; background:#eef6ff; margin-right:8px; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--color-primary); }
-        .header { position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; margin-left:-40px; margin-right:-40px; padding:12px 40px; background:var(--surface); border-bottom:1px solid var(--border); margin-bottom:18px; box-shadow:0 2px 10px rgba(0,0,0,.03); }
-        .action-bar { display:flex; justify-content:flex-end; gap:10px; margin-bottom:8px; }
-        .action-bar button { padding:8px 16px; border:none; border-radius:5px; background:var(--color-primary); color:#fff; font-size:15px; cursor:pointer; transition:background .2s; }
-        .action-bar button:hover { background:#1e40af; }
-        .content { display:flex; gap:30px; flex-wrap:wrap; }
-        .info, .history { background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04); padding:24px; margin-bottom:30px; }
-        .info { flex:1 1 320px; min-width:320px; }
-        .history { flex:2 1 600px; min-width:600px; }
-        .info h3, .history h3 { margin-top:0; color:var(--color-primary); }
-        .info-table, .history-table { width:100%; border-collapse:collapse; }
-        .info-table td { padding:6px 0; }
-        .info-table td.label { color:#888; width:140px; }
-        .history-table th, .history-table td { border-bottom:1px solid #e0e0e0; padding:8px 6px; text-align:center; vertical-align:middle; }
-        .history-table th { background:#f5f6f5; color:var(--color-primary); }
-        .history-statusfinish { color:#02af44; font-weight:600; }
-        .history-statusunfinish { color:#e74c3c; font-weight:600; }
+        /* Skeleton loading */
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        /* Fade-in animation */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeInUp 0.6s ease-out forwards; }
+        .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+
+        /* Topbar */
+        .topbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .title { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+        .select, .button { background: var(--panel); color: var(--text); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 12px; font: inherit; }
+        .button.brand { background: linear-gradient(135deg, var(--brand), var(--brand-2)); border: 0; }
+        .button.ghost { background: transparent; border: 1px dashed rgba(255,255,255,0.16); color: var(--muted); }
+
+        /* KPI cards */
+        .grid { display: grid; gap: 14px; }
+        .grid.kpi { grid-template-columns: repeat(6, 1fr); }
+        .card { background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.25); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.35), 0 0 0 1px rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.2); }
+        .kpi .card { display: grid; gap: 8px; cursor: pointer; }
+        .kpi .label { color: var(--muted); font-size: 12px; }
+        .kpi .value { font-size: 22px; font-weight: 700; letter-spacing: .2px; }
+        .kpi .trend { font-size: 12px; display: flex; align-items: center; gap: 6px; }
+        .trend.up { color: var(--ok); }
+        .trend.down { color: var(--bad); }
+
+        /* Charts */
+        .grid.charts { grid-template-columns: 2fr 1fr 1fr; }
+        .chart-wrap { 
+            padding: 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 280px;
+        }
+        canvas { 
+            width: 100%; 
+            height: 240px; 
+            max-width: 100%;
+        }
+
+        /* Tables & alerts */
+        .section-title { font-size: 14px; color: var(--muted); margin: 8px 2px 6px; text-transform: uppercase; letter-spacing: .08em; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: left; font-size: 14px; }
+        th { color: var(--muted); font-weight: 600; }
+        .tags { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+        .tag { font-size: 12px; padding: 4px 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); color: var(--muted); }
+        .tag.warn { color: #f59e0b; border-color: rgba(245,158,11,.35); }
+        .tag.bad { color: #ef4444; border-color: rgba(239,68,68,.35); }
+        .quick-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* Responsive */
+        @media (max-width: 1200px) { .grid.kpi { grid-template-columns: repeat(3, 1fr); } .grid.charts { grid-template-columns: 1fr; } }
+        @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } }
+        
+        /* Ẩn test ribbon khỏi giao diện người dùng */
+        .test-ribbon {
+            display: none !important;
+            visibility: hidden !important;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
-    <div class="header">
-        <div style="display:flex; align-items:center; gap:16px;">
-            <div class="header-logo">
-                <div class="logo-box" aria-label="Customers">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-                        <circle cx="9" cy="8" r="3" fill="#2563eb" opacity="0.9"></circle>
-                        <circle cx="16" cy="9" r="2.5" fill="#2563eb" opacity="0.6"></circle>
-                        <rect x="4" y="13" width="10" height="7" rx="3.5" fill="#2563eb" opacity="0.15"></rect>
-                        <rect x="12.5" y="13.5" width="7" height="6.5" rx="3.25" fill="#2563eb" opacity="0.12"></rect>
-                    </svg>
+    <!-- ========================================
+         DASHBOARD HEADER SECTION
+         Nhóm: UI Layout
+         Mô tả: Header với bộ lọc thời gian và chi nhánh
+         ======================================== -->
+    <div class="topbar">
+        <div class="title">Tổng quan kinh doanh</div>
+        <div class="filters">
+            <select class="select" id="filter-range">
+                <option>Hôm nay</option>
+                <option>7 ngày qua</option>
+                <option selected>Tháng này</option>
+                <option>Tùy chỉnh…</option>
+            </select>
+            <select class="select" id="filter-branch">
+                <option>Tất cả chi nhánh</option>
+                <option>Hà Nội</option>
+                <option>Hồ Chí Minh</option>
+                <option>Đà Nẵng</option>
+            </select>
+            <button class="button ghost" id="export-sheets">Xuất sang Trang tính</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         KPI CARDS SECTION
+         Nhóm: Data Visualization
+         Mô tả: Hiển thị các chỉ số KPI chính của doanh nghiệp
+         Chức năng: Hiển thị doanh thu, lợi nhuận, đơn hàng, tỷ lệ chuyển đổi
+         ======================================== -->
+    <div class="grid kpi fade-in stagger-1" id="kpi-grid">
+                <div class="card" id="kpi-revenue">
+                    <div class="label">Tổng Doanh Thu</div>
+                    <div class="value skeleton" style="height: 28px; width: 80%;"></div>
+                    <div class="trend skeleton" style="height: 16px; width: 60%;"></div>
                 </div>
-                <div class="header-title">Thông tin khách hàng</div>
+                <div class="card" id="kpi-gp">
+                    <div class="label">Lợi Nhuận Gộp</div>
+                    <div class="value skeleton" style="height: 28px; width: 80%;"></div>
+                    <div class="trend skeleton" style="height: 16px; width: 50%;"></div>
+                </div>
+                <div class="card" id="kpi-orders">
+                    <div class="label">Số Lượng Đơn Hàng</div>
+                    <div class="value skeleton" style="height: 28px; width: 60%;"></div>
+                    <div class="trend skeleton" style="height: 16px; width: 50%;"></div>
+                </div>
+                <div class="card" id="kpi-cr">
+                    <div class="label">Tỷ Lệ Chuyển Đổi</div>
+                    <div class="value skeleton" style="height: 28px; width: 50%;"></div>
+                    <div class="trend skeleton" style="height: 16px; width: 50%;"></div>
+                </div>
+                <div class="card" id="kpi-aov">
+                    <div class="label">AOV (Giá trị TB đơn)</div>
+                    <div class="value skeleton" style="height: 28px; width: 70%;"></div>
+                    <div class="trend skeleton" style="height: 16px; width: 50%;"></div>
+                </div>
+                <div class="card" id="kpi-stock">
+                    <div class="label">Hàng tồn kho giá trị cao</div>
+                    <div class="value skeleton" style="height: 28px; width: 75%;"></div>
+                    <div class="tags">
+                        <span class="skeleton" style="height: 24px; width: 80px; display: inline-block;"></span>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="user-box">
-            <span class="user-avatar">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="#27ae60"/><rect x="4" y="16" width="16" height="6" rx="3" fill="#27ae60" opacity=".2"/></svg>
-            </span>
-            {{ user_name or 'Admin' }}
-            <div class="user-dropdown">
-                <a href="#">Chỉnh sửa thông tin</a>
-                <a href="#">Đổi mật khẩu</a>
-                <a href="#">Đăng xuất</a>
+
+            <!-- Charts -->
+            <div class="section-title">Biểu đồ và xu hướng</div>
+            <div class="grid charts fade-in stagger-2">
+                <div class="card chart-wrap">
+                    <canvas id="chartRevenue"></canvas>
+                </div>
+                <div class="card chart-wrap">
+                    <canvas id="chartProductMix"></canvas>
+                </div>
+                <div class="card chart-wrap">
+                    <canvas id="chartSalesByChannel"></canvas>
+                </div>
             </div>
-        </div>
+
+            <!-- Tables -->
+            <div class="section-title">Top 5 sản phẩm bán chạy/Lợi nhuận cao</div>
+            <div class="card fade-in stagger-3">
+                <table id="tbl-top-products">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Doanh thu</th>
+                            <th>Lợi nhuận gộp</th>
+                            <th>Số lượng</th>
+                            <th>Tỷ suất LN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Áo thun Basic</td><td>₫220.000.000</td><td>₫66.000.000</td><td>1.200</td><td>30%</td></tr>
+                        <tr><td>Quần jeans Slim</td><td>₫180.000.000</td><td>₫54.000.000</td><td>760</td><td>30%</td></tr>
+                        <tr><td>Giày Runner Pro</td><td>₫150.000.000</td><td>₫60.000.000</td><td>310</td><td>40%</td></tr>
+                        <tr><td>Mũ lưỡi trai</td><td>₫90.000.000</td><td>₫22.500.000</td><td>900</td><td>25%</td></tr>
+                        <tr><td>Túi đeo chéo</td><td>₫75.000.000</td><td>₫26.250.000</td><td>215</td><td>35%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Đơn hàng cần xử lý/Cảnh báo</div>
+            <div class="card">
+                <table id="tbl-orders-alert">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày đặt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>#INV-10421</td><td>Nguyễn Văn A</td><td><span class="tag warn">Chờ xác nhận</span></td><td>2025-09-25</td></tr>
+                        <tr><td>#INV-10422</td><td>Trần Thị B</td><td><span class="tag">Đang đóng gói</span></td><td>2025-09-26</td></tr>
+                        <tr><td>#INV-10423</td><td>Phạm Văn C</td><td><span class="tag bad">Đã hủy</span></td><td>2025-09-26</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Khách hàng thân thiết/Tiềm năng</div>
+            <div class="card">
+                <table id="tbl-top-customers">
+                    <thead>
+                        <tr>
+                            <th>Khách hàng</th>
+                            <th>Lifetime Value</th>
+                            <th>Số đơn</th>
+                            <th>Lần mua gần nhất</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Đặng Thu D</td><td>₫120.000.000</td><td>34</td><td>2025-09-27</td></tr>
+                        <tr><td>Võ Minh E</td><td>₫95.000.000</td><td>28</td><td>2025-09-26</td></tr>
+                        <tr><td>Hồ Ngọc F</td><td>₫80.000.000</td><td>22</td><td>2025-09-24</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Alerts & Quick actions & Calendar -->
+            <div class="grid" style="grid-template-columns: 2fr 1fr; margin-top: 14px; gap:14px;">
+                <div class="card">
+                    <div class="section-title">Cảnh báo tồn kho</div>
+                    <div class="tags" id="stock-alerts">
+                        <span class="tag warn">Áo thun Basic - tồn 8</span>
+                        <span class="tag warn">Giày Runner Pro - tồn 5</span>
+                        <span class="tag bad">Túi đeo chéo - tồn 2</span>
+                    </div>
+                    <div class="section-title" style="margin-top:12px;">Cảnh báo khác</div>
+                    <div class="tags">
+                        <span class="tag bad">Tỷ lệ hủy tăng 12%</span>
+                        <span class="tag">Khách hàng VIP mới</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-title">Tác vụ nhanh</div>
+                    <div class="quick-actions">
+                        <button class="button brand">Tạo Đơn Hàng Mới</button>
+                        <button class="button">Thêm Sản Phẩm Mới</button>
+                        <button class="button">Xem Báo Cáo Chi Tiết</button>
+                    </div>
+                    <div class="section-title" style="margin-top:12px;">Lịch & Sự kiện</div>
+                    <div class="tags">
+                        <span class="tag">31/10: Kết thúc khuyến mãi</span>
+                        <span class="tag">02/11: Nhập hàng kho HN</span>
+                        <span class="tag">05/11: Họp kinh doanh</span>
+                    </div>
+                </div>
     </div>
-    <div class="action-bar">
-        <button>Thêm mới</button>
-        <button>Cập nhật</button>
-        <button>Nhập dữ liệu</button>
-        <button>Xuất dữ liệu</button>
-        <button>Xóa Dữ Liệu</button>
-    </div>
-    <div class="content">
-        <div class="info">
-            <h3>Thông tin cá nhân</h3>
-            <table class="info-table">
-                <tr>
-                    <td class="label">Tên khách hàng:</td>
-                    <td>
-                        {{ customer.name if customer else 'Nguyễn Phước Lộc' }}
-                        <span class="customer-group-box">Thân Thiết</span>
-                    </td>
-                </tr>
-                <tr><td class="label">Ngày sinh:</td><td>{{ customer.dob if customer else '27/09/2007' }}</td></tr>
-                <tr><td class="label">Số điện thoại:</td><td>{{ customer.phone if customer else '0901234567' }}</td></tr>
-                <tr><td class="label">Email:</td><td>{{ customer.email if customer else 'nploc2007@email.com' }}</td></tr>
-                <tr><td class="label">Địa chỉ:</td><td>{{ customer.address if customer else 'Phan Thiết' }}</td></tr>
-                <tr><td class="label">Mã KH:</td><td>{{ customer.code if customer else 'KH001' }}</td></tr>
-                <tr><td class="label">Tổng tiền mua:</td><td>{{ customer.total if customer else '1,500,000đ' }}</td></tr>
-                <tr><td class="label">Ngày cuối mua:</td><td>{{ customer.last_purchase if customer else '28/09/2025' }}</td></tr>
-            </table>
-        </div>
-        <div class="history">
-            <h3>Lịch sử mua hàng</h3>
-            <table class="history-table">
-                <tr>
-                    <th>Mã đơn hàng</th>
-                    <th>Tên KH</th>
-                    <th>Xuất kho</th>
-                    <th>Giá trị</th>
-                    <th>Ngày ghi nhận</th>
-                    <th>Trạng thái</th>
-                </tr>
-                {% for order in orders or [] %}
-                <tr>
-                    <td>{{ order.code }}</td>
-                    <td>{{ order.customer }}</td>
-                    <td>{{ order.export_status }}</td>
-                    <td>{{ order.value }}</td>
-                    <td>{{ order.date }}</td>
-                    <td class="{{ 'history-statusfinish' if order.status == 'done' else 'history-statusunfinish' }}">{{ order.status_label }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-            {% if orders %}
-            <div style="margin-bottom:12px; color:#675c5c; font-size:14px;">Hiển thị {{ orders|length }}/{{ orders|length }} kết quả</div>
-            {% endif %}
-        </div>
-    </div>
+
+    <!-- Auto tests + Charts init + API -->
+    <div class="test-ribbon" id="test-ribbon">Đang chạy kiểm thử giao diện…</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- ========================================
+     DASHBOARD JAVASCRIPT FUNCTIONALITY
+     Nhóm: Client-side Logic
+     Mô tả: Xử lý tương tác dashboard và tải dữ liệu
+     Chức năng:
+     - Tải dữ liệu từ API
+     - Khởi tạo biểu đồ Chart.js
+     - Kiểm thử giao diện tự động
+     - Quản lý preloader
+     ======================================== -->
+<script>
+        // ========================================
+        // DATA LOADING AND API INTEGRATION
+        // Nhóm: Data Management
+        // Mô tả: Tải dữ liệu dashboard từ API và xử lý
+        // ========================================
+        (function(){
+            var preloader = document.getElementById('preloader');
+            
+            // Fetch dashboard data từ API
+            fetch('/api/dashboard-stats')
+                .then(function(res){ return res.json(); })
+                .then(function(data){
+                    // Update KPI cards
+                    var fmt = function(n){ return '₫' + Math.round(n).toLocaleString('vi-VN'); };
+                    document.querySelector('#kpi-revenue .value').textContent = fmt(data.kpi.total_revenue);
+                    document.querySelector('#kpi-revenue .value').classList.remove('skeleton');
+                    document.querySelector('#kpi-revenue .trend').innerHTML = '<span style="color:#10b981">▲ +12.4%</span> so với tháng trước';
+                    document.querySelector('#kpi-revenue .trend').classList.remove('skeleton');
+                    
+                    document.querySelector('#kpi-gp .value').textContent = fmt(data.kpi.gross_profit);
+                    document.querySelector('#kpi-gp .value').classList.remove('skeleton');
+                    document.querySelector('#kpi-gp .trend').innerHTML = '<span style="color:#10b981">▲ +8.1%</span>';
+                    document.querySelector('#kpi-gp .trend').classList.remove('skeleton');
+                    
+                    document.querySelector('#kpi-orders .value').textContent = data.kpi.total_orders;
+                    document.querySelector('#kpi-orders .value').classList.remove('skeleton');
+                    document.querySelector('#kpi-orders .trend').innerHTML = '<span style="color:#ef4444">▼ -2.3%</span>';
+                    document.querySelector('#kpi-orders .trend').classList.remove('skeleton');
+                    
+                    document.querySelector('#kpi-cr .value').textContent = data.kpi.conversion_rate.toFixed(1) + '%';
+                    document.querySelector('#kpi-cr .value').classList.remove('skeleton');
+                    document.querySelector('#kpi-cr .trend').innerHTML = '<span style="color:#10b981">▲ +0.4đ</span>';
+                    document.querySelector('#kpi-cr .trend').classList.remove('skeleton');
+                    
+                    document.querySelector('#kpi-aov .value').textContent = fmt(data.kpi.aov);
+                    document.querySelector('#kpi-aov .value').classList.remove('skeleton');
+                    document.querySelector('#kpi-aov .trend').innerHTML = '<span style="color:#10b981">▲ +3.1%</span>';
+                    document.querySelector('#kpi-aov .trend').classList.remove('skeleton');
+                    
+                    document.querySelector('#kpi-stock .value').textContent = fmt(data.kpi.high_value_stock);
+                    document.querySelector('#kpi-stock .value').classList.remove('skeleton');
+                    document.querySelector('#kpi-stock .tags').innerHTML = '<span class="tag warn">12 sắp hết</span><span class="tag bad">5 rủi ro</span>';
+                    
+                    // Update tables
+                    var tbl = document.querySelector('#tbl-top-products tbody');
+                    tbl.innerHTML = '';
+                    data.top_products.forEach(function(p){
+                        var row = '<tr><td>' + p.name + '</td><td>' + fmt(p.revenue) + '</td><td>' + fmt(p.profit) + '</td><td>' + p.quantity + '</td><td>' + p.margin + '%</td></tr>';
+                        tbl.innerHTML += row;
+                    });
+                    
+                    var tblCust = document.querySelector('#tbl-top-customers tbody');
+                    tblCust.innerHTML = '';
+                    data.top_customers.forEach(function(c){
+                        var row = '<tr><td>' + c.name + '</td><td>' + c.lifetime_value + '</td><td>' + c.orders + '</td><td>' + c.last_purchase + '</td></tr>';
+                        tblCust.innerHTML += row;
+                    });
+                    
+                    // ========================================
+                    // CHART INITIALIZATION MODULE
+                    // Nhóm: Data Visualization
+                    // Mô tả: Khởi tạo các biểu đồ Chart.js
+                    // ========================================
+                    if (window.Chart) {
+                        var ctx1 = document.getElementById('chartRevenue');
+                        var ctx2 = document.getElementById('chartProductMix');
+                        var ctx3 = document.getElementById('chartSalesByChannel');
+                        
+                        if (ctx1) new Chart(ctx1, {
+                            type: 'line',
+                            data: { labels: data.charts.revenue.labels, datasets: [
+                                { label: 'Doanh thu', data: data.charts.revenue.revenue.map(function(v){ return v/1000000; }), borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.25)', tension: .35, fill: true, pointRadius: 4, pointHoverRadius: 6, shadowOffsetX: 3, shadowOffsetY: 3, shadowBlur: 10, shadowColor: 'rgba(96,165,250,0.5)' },
+                                { label: 'Lợi nhuận', data: data.charts.revenue.profit.map(function(v){ return v/1000000; }), borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,.25)', tension: .35, fill: true, pointRadius: 4, pointHoverRadius: 6 }
+                            ] },
+                            options: { 
+                                responsive: true,
+                                plugins: { 
+                                    legend: { labels: { color: '#cbd5e1', font: { weight: '600' } } },
+                                    tooltip: { backgroundColor: 'rgba(17,24,39,0.95)', titleColor: '#e5e7eb', bodyColor: '#cbd5e1', borderColor: 'rgba(99,102,241,0.3)', borderWidth: 1 }
+                                }, 
+                                scales: { 
+                                    x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }, 
+                                    y: { ticks: { color: '#94a3b8', callback: function(v){ return v + 'M'; } }, grid: { color: 'rgba(255,255,255,0.05)' } } 
+                                },
+                                animation: { duration: 1200, easing: 'easeInOutQuart' }
+                            }
+                        });
+                        
+                        if (ctx2) new Chart(ctx2, {
+                            type: 'doughnut',
+                            data: { 
+                                labels: data.charts.product_mix.labels, 
+                                datasets: [{ 
+                                    data: data.charts.product_mix.data, 
+                                    backgroundColor: [
+                                        '#8b5cf6',  // Màu tím
+                                        '#6366f1',  // Màu xanh tím
+                                        '#06b6d4',  // Màu xanh ngọc
+                                        '#f59e0b'   // Màu cam
+                                    ], 
+                                    borderWidth: 0, 
+                                    hoverOffset: 12 
+                                }] 
+                            },
+                            options: { 
+                                responsive: true,
+                                plugins: { 
+                                    legend: { labels: { color: '#cbd5e1', font: { weight: '600' }, padding: 12 } },
+                                    tooltip: { backgroundColor: 'rgba(17,24,39,0.95)', titleColor: '#e5e7eb', bodyColor: '#cbd5e1', borderColor: 'rgba(99,102,241,0.3)', borderWidth: 1 }
+                                },
+                                animation: { animateRotate: true, animateScale: true, duration: 1200 }
+                            }
+                        });
+                        
+                        if (ctx3) new Chart(ctx3, {
+                            type: 'bar',
+                            data: { labels: data.charts.sales_by_channel.labels, datasets: [
+                                { 
+                                    label: 'Doanh số', 
+                                    data: data.charts.sales_by_channel.data.map(function(v){ return v/1000000; }), 
+                                    backgroundColor: [
+                                        '#6366f1',  // Website - màu tím
+                                        '#1877f2',  // Facebook - màu xanh FB
+                                        '#ee4d2d',  // Shopee - màu cam Shopee
+                                        '#10b981'   // Cửa hàng - màu xanh lá
+                                    ], 
+                                    borderRadius: 8, 
+                                    borderSkipped: false, 
+                                    hoverBackgroundColor: [
+                                        '#818cf8',  // Website hover
+                                        '#42a5f5',  // Facebook hover
+                                        '#ff6b47',  // Shopee hover
+                                        '#34d399'   // Cửa hàng hover
+                                    ] 
+                                }
+                            ] },
+                            options: { 
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { 
+                                    legend: { display: false },
+                                    tooltip: { 
+                                        backgroundColor: 'rgba(17,24,39,0.95)', 
+                                        titleColor: '#e5e7eb', 
+                                        bodyColor: '#cbd5e1', 
+                                        borderColor: 'rgba(99,102,241,0.3)', 
+                                        borderWidth: 1,
+                                        callbacks: {
+                                            title: function(context) {
+                                                return context[0].label;
+                                            },
+                                            label: function(context) {
+                                                return context.label + ': ' + context.parsed.y + 'M VNĐ';
+                                            }
+                                        }
+                                    }
+                                }, 
+                                scales: { 
+                                    x: { 
+                                        ticks: { color: '#94a3b8' }, 
+                                        grid: { display: false } 
+                                    }, 
+                                    y: { 
+                                        ticks: { 
+                                            color: '#94a3b8', 
+                                            callback: function(v){ return v + 'M'; } 
+                                        }, 
+                                        grid: { color: 'rgba(255,255,255,0.05)' } 
+                                    } 
+                                },
+                                animation: { 
+                                    duration: 1200, 
+                                    easing: 'easeInOutQuart',
+                                    delay: function(context) {
+                                        return context.dataIndex * 200;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // ========================================
+                    // UI TESTING AND VALIDATION
+                    // Nhóm: Quality Assurance
+                    // Mô tả: Kiểm thử tự động các thành phần giao diện
+                    // ========================================
+                    var results = [];
+                    function t(name, condition) { results.push({ name: name, ok: !!condition }); }
+                    t('Sidebar tồn tại', document.querySelector('.sidebar'));
+                    t('KPI grid có 6 thẻ', document.querySelectorAll('#kpi-grid .card').length === 6);
+                    t('Có 3 biểu đồ', document.querySelectorAll('canvas').length >= 3);
+                    t('Bảng Top sản phẩm tồn tại', document.getElementById('tbl-top-products'));
+                    t('Bảng Đơn hàng cảnh báo tồn tại', document.getElementById('tbl-orders-alert'));
+                    t('Bảng Top khách hàng tồn tại', document.getElementById('tbl-top-customers'));
+                    t('API data loaded', data.kpi);
+                    var allOk = results.every(function(r){ return r.ok; });
+                    var ribbon = document.getElementById('test-ribbon');
+                    if (allOk) {
+                        ribbon.style.background = 'rgba(16,185,129,0.12)';
+                        ribbon.style.borderColor = 'rgba(16,185,129,0.45)';
+                        ribbon.style.color = '#10b981';
+                        ribbon.textContent = 'Kiểm thử: PASSED (' + results.length + ' checks | API: OK)';
+                    } else {
+                        ribbon.style.background = 'rgba(239,68,68,0.12)';
+                        ribbon.style.borderColor = 'rgba(239,68,68,0.45)';
+                        ribbon.style.color = '#ef4444';
+                        var failed = results.filter(function(r){ return !r.ok; }).map(function(r){ return r.name; }).join(', ');
+                        ribbon.textContent = 'Kiểm thử: FAILED -> ' + failed;
+                        console.error('UI tests failed:', results);
+                    }
+                    
+                    // Hide preloader
+                    setTimeout(function(){
+                        preloader.classList.add('hidden');
+                    }, 300);
+                })
+                .catch(function(err){
+                    console.error('API error:', err);
+                    document.getElementById('test-ribbon').textContent = 'API Error: ' + err.message;
+                    document.getElementById('test-ribbon').style.color = '#ef4444';
+                    preloader.classList.add('hidden');
+                });
+        })();
+</script>
 {% endblock %}
