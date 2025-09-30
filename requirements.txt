@@ -1,0 +1,4 @@
+colorama
+openpyxl
+gunicorn
+flask
