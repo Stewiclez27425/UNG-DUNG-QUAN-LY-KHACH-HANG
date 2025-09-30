@@ -1,8 +1,21 @@
+<!-- ========================================
+     SIDEBAR NAVIGATION COMPONENT
+     Nhóm: UI Components
+     Mô tả: Sidebar điều hướng chính của ứng dụng
+     Chức năng: 
+     - Hiển thị logo và tên ứng dụng
+     - Menu điều hướng chính
+     - Tác vụ nhanh
+     - Highlight menu đang active
+     ======================================== -->
 <aside class="sidebar">
+    <!-- Brand Section - Logo và tên ứng dụng -->
     <div class="brand">
         <div class="brand-logo"></div>
         <div class="brand-name">QLKH</div>
     </div>
+    
+    <!-- Main Navigation Menu -->
     <div class="menu-group">Danh mục</div>
     <nav class="menu">
         <a href="/" class="{% if active=='overview' %}active{% endif %}">Tổng quan</a>
@@ -13,6 +26,8 @@
         <a href="/statistics" class="{% if active=='statistics' %}active{% endif %}">Thống kê</a>
         <a href="#" class="{% if active=='settings' %}active{% endif %}">Cài đặt</a>
     </nav>
+    
+    <!-- Quick Actions Menu - Các tác vụ thường dùng -->
     <div class="menu-group">Tác vụ nhanh</div>
     <div class="menu">
         <a href="#" id="qa-new-order">Tạo đơn hàng mới</a>
