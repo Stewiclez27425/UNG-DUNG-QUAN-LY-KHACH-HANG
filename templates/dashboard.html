@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Hệ Thống Quản Lý Khách Hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .permission-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .permission-full { background: #dc3545; }
+        .permission-read-write { background: #fd7e14; }
+        .permission-read-only { background: #6c757d; }
+        .user-info {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="p-3">
+                    <h4 class="text-white mb-4">
+                        <i class="fas fa-store"></i> Quản Lý KH
+                    </h4>
+                    
+                    <!-- Thông tin người dùng -->
+                    <div class="user-info">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-user-circle fa-2x text-primary me-2"></i>
+                            <div>
+                                <h6 class="mb-0">{{ user.full_name }}</h6>
+                                <small class="text-muted">{{ user.username }}</small>
+                            </div>
+                        </div>
+                        <span class="permission-badge permission-{{ user.permission.lower().replace('_', '-') }}">
+                            {{ user.permission | permission_label }}
+                        </span>
+                    </div>
+                    
+                    <!-- Menu -->
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ 'active' if active == 'dashboard' else '' }}" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                        
+                        {% if user.has_permission('READ_ONLY') %}
+                        <a class="nav-link {{ 'active' if active == 'customers' else '' }}" href="{{ url_for('customers_list') }}">
+                            <i class="fas fa-users me-2"></i> Khách Hàng
+                        </a>
+                        {% endif %}
+                        
+                        {% if user.has_permission('READ_WRITE') %}
+                        <a class="nav-link" href="{{ url_for('add_customer_web') }}">
+                            <i class="fas fa-user-plus me-2"></i> Thêm KH
+                        </a>
+                        {% endif %}
+                        
+                        {% if user.has_permission('FULL') %}
+                        <a class="nav-link {{ 'active' if active == 'admin' else '' }}" href="{{ url_for('admin_panel') }}">
+                            <i class="fas fa-cog me-2"></i> Quản Trị
+                        </a>
+                        {% endif %}
+                        
+                        <a class="nav-link {{ 'active' if active == 'profile' else '' }}" href="{{ url_for('profile') }}">
+                            <i class="fas fa-user me-2"></i> Hồ Sơ
+                        </a>
+                        
+                        <hr class="text-white-50">
+                        
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i> Đăng Xuất
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="p-4">
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-tachometer-alt me-2"></i> Dashboard</h2>
+                        <div class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ moment().format('DD/MM/YYYY HH:mm') }}
+                        </div>
+                    </div>
+                    
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' }}"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <!-- Stats Cards -->
+                    {% if stats %}
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card stat-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-users fa-2x mb-2"></i>
+                                    <h4>{{ stats.total_customers }}</h4>
+                                    <p class="mb-0">Tổng Khách Hàng</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stat-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-check fa-2x mb-2"></i>
+                                    <h4>{{ stats.active_customers }}</h4>
+                                    <p class="mb-0">Khách Hàng Hoạt Động</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stat-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                    <h4>{{ stats.active_orders }}</h4>
+                                    <p class="mb-0">Đơn Hàng</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stat-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                                    <h4>{{ stats.active_amount }}</h4>
+                                    <p class="mb-0">Tổng Doanh Thu</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Recent Customers -->
+                    {% if customers %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-users me-2"></i> Khách Hàng Gần Đây
+                                    </h5>
+                                    <a href="{{ url_for('customers_list') }}" class="btn btn-sm btn-outline-primary">
+                                        Xem Tất Cả
+                                    </a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Mã KH</th>
+                                                    <th>Họ Tên</th>
+                                                    <th>Số ĐT</th>
+                                                    <th>Email</th>
+                                                    <th>Trạng Thái</th>
+                                                    {% if can_edit %}
+                                                    <th>Thao Tác</th>
+                                                    {% endif %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for customer in customers %}
+                                                <tr>
+                                                    <td><code>{{ customer.code }}</code></td>
+                                                    <td>{{ customer.name }}</td>
+                                                    <td>{{ customer.phone }}</td>
+                                                    <td>{{ customer.email }}</td>
+                                                    <td>
+                                                        <span class="badge bg-{{ 'success' if customer.status == 'active' else 'secondary' }}">
+                                                            {{ 'Hoạt động' if customer.status == 'active' else 'Không hoạt động' }}
+                                                        </span>
+                                                    </td>
+                                                    {% if can_edit %}
+                                                    <td>
+                                                        <a href="{{ url_for('customer_detail', customer_code=customer.code) }}" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        {% if can_delete %}
+                                                        <button class="btn btn-sm btn-outline-danger">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                        {% endif %}
+                                                    </td>
+                                                    {% endif %}
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Quick Actions -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-bolt me-2"></i> Thao Tác Nhanh
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% if user.has_permission('READ_WRITE') %}
+                                        <div class="col-md-3 mb-2">
+                                            <a href="{{ url_for('add_customer_web') }}" class="btn btn-primary w-100">
+                                                <i class="fas fa-user-plus me-2"></i> Thêm Khách Hàng
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if user.has_permission('READ_ONLY') %}
+                                        <div class="col-md-3 mb-2">
+                                            <a href="{{ url_for('customers_list') }}" class="btn btn-info w-100">
+                                                <i class="fas fa-list me-2"></i> Danh Sách KH
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if user.has_permission('FULL') %}
+                                        <div class="col-md-3 mb-2">
+                                            <a href="{{ url_for('admin_panel') }}" class="btn btn-warning w-100">
+                                                <i class="fas fa-cog me-2"></i> Quản Trị
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="col-md-3 mb-2">
+                                            <a href="{{ url_for('profile') }}" class="btn btn-secondary w-100">
+                                                <i class="fas fa-user me-2"></i> Hồ Sơ
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
