@@ -1,0 +1,22 @@
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-logo"></div>
+        <div class="brand-name">QLKH</div>
+    </div>
+    <div class="menu-group">Danh mục</div>
+    <nav class="menu">
+        <a href="/" class="{% if active=='overview' %}active{% endif %}">Tổng quan</a>
+        <a href="/orders" class="{% if active=='orders' %}active{% endif %}">Đơn hàng</a>
+        <a href="/products" class="{% if active=='products' %}active{% endif %}">Sản phẩm</a>
+        <a href="/customers-list" class="{% if active=='customers' %}active{% endif %}">Khách hàng</a>
+        <a href="/reports" class="{% if active=='reports' %}active{% endif %}">Báo cáo</a>
+        <a href="/statistics" class="{% if active=='statistics' %}active{% endif %}">Thống kê</a>
+        <a href="#" class="{% if active=='settings' %}active{% endif %}">Cài đặt</a>
+    </nav>
+    <div class="menu-group">Tác vụ nhanh</div>
+    <div class="menu">
+        <a href="#" id="qa-new-order">Tạo đơn hàng mới</a>
+        <a href="#" id="qa-new-product">Thêm sản phẩm mới</a>
+        <a href="/reports" id="qa-view-report">Xem báo cáo chi tiết</a>
+    </div>
+</aside>

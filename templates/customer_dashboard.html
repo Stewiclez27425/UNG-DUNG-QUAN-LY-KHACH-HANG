@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Khách Hàng{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <div style="display:flex; align-items:center; gap:16px;">
+            <div class="header-logo">
+                <div class="logo-box" aria-label="Customers">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                        <circle cx="9" cy="8" r="3" fill="#6366f1" opacity="0.9"></circle>
+                        <circle cx="16" cy="9" r="2.5" fill="#8b5cf6" opacity="0.6"></circle>
+                        <rect x="4" y="13" width="10" height="7" rx="3.5" fill="#6366f1" opacity="0.15"></rect>
+                        <rect x="12.5" y="13.5" width="7" height="6.5" rx="3.25" fill="#8b5cf6" opacity="0.12"></rect>
+                    </svg>
+                </div>
+                <div class="header-title">Thông tin khách hàng</div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="customer-group customer-group-box group-{{ customer.status | default('inactive') }}">
+                {{ customer.status | default('inactive') | capitalize }}
+            </div>
+            <div class="user-box">
+                <span class="user-avatar">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="#6366f1"/><rect x="4" y="16" width="16" height="6" rx="3" fill="#6366f1" opacity=".2"/></svg>
+                </span>
+                Admin
+                <div class="user-dropdown">
+                    <a href="#" onclick="editUserInfo()">Chỉnh sửa thông tin</a>
+                    <a href="#" onclick="changePassword()">Đổi mật khẩu</a>
+                    <a href="#" onclick="logout()">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn btn-primary">Thêm mới</button>
+        <button class="btn btn-secondary">Cập nhật</button>
+        <button class="btn btn-info">Nhập dữ liệu</button>
+        <button class="btn btn-success">Xuất dữ liệu</button>
+        <button class="btn btn-danger">Xóa Dữ Liệu</button>
+    </div>
+
+    <div class="content">
+        <div class="info">
+            <h3>Thông tin cá nhân <button class="edit-btn">Sửa</button></h3>
+            <table class="info-table">
+                <tr>
+                    <td class="label">Tên khách hàng:</td>
+                    <td>
+                        {{ customer.name or 'Chưa rõ' }}
+                        {% if customer.group == 'loyal' %}<span class="customer-group-box group-loyal">Thân Thiết</span>{% endif %}
+                        {% if customer.group == 'vip' %}<span class="customer-group-box group-vip">Quan trọng</span>{% endif %}
+                        {% if customer.group == 'potential' %}<span class="customer-group-box group-potential">Tiềm năng</span>{% endif %}
+                    </td>
+                </tr>
+                <tr><td class="label">Ngày sinh:</td><td>{{ customer.dob or '—' }}</td></tr>
+                <tr><td class="label">Số điện thoại:</td><td>{{ customer.phone or '—' }}</td></tr>
+                <tr><td class="label">Email:</td><td>{{ customer.email or '—' }}</td></tr>
+                <tr><td class="label">Địa chỉ:</td><td>{{ customer.address or '—' }}</td></tr>
+                <tr><td class="label">Mã KH:</td><td>{{ customer.code or '—' }}</td></tr>
+                <tr><td class="label">Tổng tiền mua:</td><td>{{ customer.total or customer.total_amount or '0đ' }}</td></tr>
+                <tr><td class="label">Ngày cuối mua:</td><td>{{ customer.last_purchase or 'Chưa có' }}</td></tr>
+            </table>
+        </div>
+
+        <div class="history" style="flex: 2 1 600px; min-width: 600px;">
+            <h3>Lịch sử mua hàng</h3>
+            <table class="history-table">
+                <tr>
+                    <th>Mã đơn hàng</th>
+                    <th>Tên KH</th>
+                    <th>Xuất kho</th>
+                    <th>Giá trị</th>
+                    <th>Ngày ghi nhận</th>
+                    <th>Trạng thái</th>
+                </tr>
+                {% for o in orders %}
+                <tr>
+                    <td>{{ o.code }}</td>
+                    <td>{{ o.customer }}</td>
+                    <td>{{ o.export_status }}</td>
+                    <td>{{ o.value }}</td>
+                    <td>{{ o.date }}</td>
+                    <td class="{{ 'history-statusfinish' if o.status=='done' else 'history-statusunfinish' }}">{{ o.status_label }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div style="margin-bottom:12px; color:var(--muted); font-size:14px;">Hiển thị {{ orders|length }}/{{ orders|length }} kết quả</div>
+        </div>
+    </div>
+
+    <div class="test-ribbon" id="test-ribbon">Đang chạy kiểm thử…</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // User functions
+    function editUserInfo() {
+        alert('Tính năng chỉnh sửa thông tin người dùng đang được phát triển...');
+    }
+    
+    function changePassword() {
+        var newPassword = prompt('Nhập mật khẩu mới:');
+        if (newPassword && newPassword.length >= 6) {
+            alert('Đổi mật khẩu thành công!');
+        } else if (newPassword) {
+            alert('Mật khẩu phải có ít nhất 6 ký tự!');
+        }
+    }
+    
+    function logout() {
+        if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+            alert('Đăng xuất thành công! Chuyển về trang đăng nhập...');
+            // window.location.href = '/login';
+        }
+    }
+
+    // UI Tests
+    (function(){
+        var checks = [];
+        function t(n,c){ checks.push({n:n, ok:!!c}); }
+        t('Sidebar', document.querySelector('.sidebar'));
+        t('Header', document.querySelector('.header'));
+        t('Bảng lịch sử', document.querySelector('.history-table'));
+        t('User dropdown', document.querySelector('.user-dropdown'));
+        var hasCustomer = parseInt('{{ 1 if customer else 0 }}', 10);
+        t('Có dữ liệu customer', hasCustomer === 1);
+        var ribbon = document.getElementById('test-ribbon');
+        var ok = checks.every(function(i){return i.ok});
+        if (ok) {
+            ribbon.style.background = 'rgba(16,185,129,0.12)';
+            ribbon.style.borderColor = 'rgba(16,185,129,0.45)';
+            ribbon.style.color = '#10b981';
+            ribbon.textContent = 'Kiểm thử: PASSED ('+checks.length+' checks)';
+        } else {
+            ribbon.style.background = 'rgba(239,68,68,0.12)';
+            ribbon.style.borderColor = 'rgba(239,68,68,0.45)';
+            ribbon.style.color = '#ef4444';
+            ribbon.textContent = 'Kiểm thử: FAILED';
+            console.error('UI tests failed:', checks);
+        }
+    })();
+</script>
+{% endblock %}
