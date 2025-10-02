@@ -9,7 +9,6 @@ import time
 from typing import Dict, List, Optional, Union
 import json
 
-<<<<<<< HEAD
 #kiem tra trung lap data
 def is_dupe_data(header, value):
     Workbook = load_workbook("ThongTinKhachHang.xlsx")
@@ -27,24 +26,17 @@ def is_dupe_data(header, value):
             return False
 
 #Phan loai khach hang (WIP)
-def phan_loai(): pass
-=======
-#Phan loai khach hang
 def phan_loai():
    # """Phân loại khách hàng mặc định"""
     return "Khách hàng tiềm năng"
->>>>>>> origin/main
-    
+
 #TrangThai khach hang
 def trang_thai_KH():
     #"""Trạng thái khách hàng mặc định"""
     return "Hoạt động"
 #xuat tong tien tu hoa don (WIP)
 
-<<<<<<< HEAD
-=======
 #Cap nhap khach hang
->>>>>>> origin/main
 def update_customer():
     """Cập nhật thông tin khách hàng với error handling"""
     try:
