@@ -141,7 +141,7 @@ Cấu hình Passenger để sử dụng `passenger_wsgi.py` làm entry point.
 - File `web_app.log` (web app)
 - File `passenger.log` (Passenger deployment)
 
-### Các file chính
+## Các file chính
 
 - app.py - File ứng dụng chính
 - config.py - File cấu hình
