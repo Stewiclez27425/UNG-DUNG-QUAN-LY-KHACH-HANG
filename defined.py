@@ -148,10 +148,10 @@ def ID_kh():
         new_id = "DLT" + str(new_id_num).zfill(5)  # id luon co 5 chu so
         return new_id
     
-def is_data_none(): #Kiem tra du lieu co bi rong khong
+def is_data_none(Ten_File): #Kiem tra du lieu co bi rong khong
     """Kiểm tra dữ liệu có rỗng không với error handling"""
     try:
-        wb=load_workbook(filename="ThongTinKhachHang.xlsx")
+        wb=load_workbook(filename=Ten_File)
         sheet=wb.active
     except FileNotFoundError:
         return True  # File không tồn tại = dữ liệu rỗng
@@ -165,18 +165,18 @@ def is_data_none(): #Kiem tra du lieu co bi rong khong
         else:
             return False
         
-def is_recycle_bin(): #kiem tra xem co trong thung rac khong
+def is_recycle_bin(Ten_File): #kiem tra xem co trong thung rac khong
     # Dùng Path join để tránh lỗi escape chuỗi trên Windows
-    file_path = Path("Recycle Bin") / "ThongTinKhachHang.xlsx"
+    file_path = Path("Recycle Bin") / "Ten_File"
     if file_path.exists() and file_path.is_file():
         return True
 
-def check_file():
-    if is_recycle_bin() == True: 
+def check_file(Ten_File):
+    if is_recycle_bin(Ten_File) == True: 
         return False
-    elif os.path.exists("ThongTinKhachHang.xlsx") == False:
+    elif os.path.exists(Ten_File) == False:
         return False
-    elif os.path.exists("ThongTinKhachHang.xlsx") and is_data_none() == True:
+    elif os.path.exists(Ten_File) and is_data_none(Ten_File) == True:
         return False
     else:
         return True
