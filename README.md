@@ -141,19 +141,18 @@ Cấu hình Passenger để sử dụng `passenger_wsgi.py` làm entry point.
 - File `web_app.log` (web app)
 - File `passenger.log` (Passenger deployment)
 
-## Troubleshooting
-
 ### Các file chính
-app.py - File ứng dụng chính
-config.py - File cấu hình
-login-system.py - Hệ thống đăng nhập
-run_with_login.py - Chạy app với login
-web_app.py & web_app_with_login.py - Web applications
-validators.py - Validation logic
-requirements.txt - Dependencies
-app.log - Log file
-Thư mục static/ - CSS và assets
-Thư mục templates/ - HTML templates
-Thư mục uploads/ - Upload folder
-ThongTinKhachHang.xlsx & userdatalogin.xlsx - Data files
-__pycache__/ - Python cache
+- app.py - File ứng dụng chính
+- config.py - File cấu hình
+- login-system.py - Hệ thống đăng nhập
+- run_with_login.py - Chạy app với login
+- web_app.py & web_app_with_login.py - Web applications
+- validators.py - Validation logic
+- requirements.txt - Dependencies
+- app.log - Log file
+- Thư mục static/ - CSS và assets
+- Thư mục templates/ - HTML templates
+- Thư mục uploads/ - Upload folder
+- ThongTinKhachHang.xlsx & userdatalogin.xlsx - Data files
+- __pycache__/ - Python cache
+
