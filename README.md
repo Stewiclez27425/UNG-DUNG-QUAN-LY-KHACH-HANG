@@ -102,16 +102,23 @@ curl http://localhost:5000/api/customers
 ## Cấu trúc dự án
 
 ```
-├── app.py                 # File chính (CLI + Web)
-├── web_app.py            # Web application riêng biệt
-├── passenger_wsgi.py     # WSGI entry point cho production
-├── config.py             # Cấu hình ứng dụng
-├── validators.py         # Validation utilities
-├── requirements.txt      # Dependencies
-├── env.example          # File cấu hình mẫu
-├── templates/           # HTML templates
-├── static/             # CSS, JS files
-└── ThongTinKhachHang.xlsx  # Database Excel
+UNG-DUNG-QUAN-LY-KHACH-HANG-main/
+├── app_with_login.py          # Flask app chính với đăng nhập
+├── app.py                     # App gốc (CLI)
+├── login_system.py            # Hệ thống đăng nhập
+├── run_app.py                 # Script chạy ứng dụng
+├── create_sample_data.py      # Tạo dữ liệu mẫu
+├── config.py                  # Cấu hình
+├── defined.py                 # Định nghĩa functions
+├── validators.py              # Validation
+├── requirements.txt           # Dependencies
+├── README_INTEGRATION.md      # Hướng dẫn tích hợp
+├── LOGIN_SYSTEM_GUIDE.md      # Hướng dẫn login
+├── ThongTinKhachHang.xlsx     # Dữ liệu khách hàng
+├── userdatalogin.xlsx         # Dữ liệu user
+├── templates/                 # Templates HTML
+├── static/                    # CSS, JS, images
+└── uploads/                   # Thư mục upload
 ```
 
 ## Production Deployment

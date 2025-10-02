@@ -9,6 +9,7 @@ import time
 from typing import Dict, List, Optional, Union
 import json
 
+<<<<<<< HEAD
 #kiem tra trung lap data
 def is_dupe_data(header, value):
     Workbook = load_workbook("ThongTinKhachHang.xlsx")
@@ -27,76 +28,110 @@ def is_dupe_data(header, value):
 
 #Phan loai khach hang (WIP)
 def phan_loai(): pass
+=======
+#Phan loai khach hang
+def phan_loai():
+   # """Phân loại khách hàng mặc định"""
+    return "Khách hàng tiềm năng"
+>>>>>>> origin/main
     
-#TrangThai (WIP)
-def trang_thai_KH(): pass
+#TrangThai khach hang
+def trang_thai_KH():
+    #"""Trạng thái khách hàng mặc định"""
+    return "Hoạt động"
 #xuat tong tien tu hoa don (WIP)
 
+<<<<<<< HEAD
+=======
+#Cap nhap khach hang
+>>>>>>> origin/main
 def update_customer():
-    KH_information = []
-    Workbook=load_workbook("ThongTinKhachHang.xlsx")
-    ws=Workbook.active
+    """Cập nhật thông tin khách hàng với error handling"""
+    try:
+        KH_information = []
+        Workbook=load_workbook("ThongTinKhachHang.xlsx")
+        ws=Workbook.active
+        
+        #tao dict
+        col_index = {cell.value: cell.column for cell in ws[1]}
+        #Update Thong tin khach hang
+        ma_kh = input ("Nhập mã khách hàng cần cập nhật thông tin: ")
+        
+        customer_found = False
+        #duyet tung phan tu trong ma khach hang
+        for cell in ws['A'][1:]:
+            if ma_kh == cell.value:
+                customer_found = True
+                print("---------- CẬP NHẬT KHÁCH HÀNG ----------")
+                #Thay doi thong tin khach hang
+                ho_ten = input("Nhập họ tên khách hàng: ")
+                so_dt = input("Nhập số điện thoại khách hàng: ")
+                dia_chi = input("Nhập địa chỉ khách hàng: ")
+                email = input("Nhập email khách hàng: ")
+                KH_information.append(ho_ten)
+                KH_information.append(so_dt)
+                KH_information.append(email)
+                KH_information.append(dia_chi)
+                Ten_truong = ['Họ tên', 'Số ĐT', 'Email', 'Địa chỉ']
+                #Bo qua email neu de trong
+                if KH_information[2] == '' or KH_information[2].strip() == '':
+                    KH_information[2] = ' '
 
-    #tao dict
-    col_index = {cell.value: cell.column for cell in ws[1]}
-    #Update Thong tin khach hang
-    ma_kh = input ("Nhập mã khách hàng cần cập nhật thông tin: ")
-    
-    #duyet tung phan tu trong ma khach hang
-    for cell in ws['A'][1:]:
-        if ma_kh == cell.value:
-            print("---------- CẬP NHẬT KHÁCH HÀNG ----------")
-            #Thay doi thong tin khach hang
-            ho_ten = input("Nhập họ tên khách hàng: ")
-            so_dt = input("Nhập số điện thoại khách hàng: ")
-            dia_chi = input("Nhập địa chỉ khách hàng: ")
-            email = input("Nhập email khách hàng: ")
-            KH_information.append(ho_ten)
-            KH_information.append(so_dt)
-            KH_information.append(email)
-            KH_information.append(dia_chi)
-            Ten_truong = ['Họ tên', 'Số ĐT', '0', 'Địa chỉ']
-            #Bo qua email neu de trong
-            if KH_information[2] == '' or KH_information[2].strip() == '':
-                KH_information[2] = ' '
-
-            #kiem tra xem ho ten, dia chi, so dth co bi trong khong
-            while True:
-        # Chỉ kiểm tra các trường bắt buộc: Họ Tên (index 0), Số ĐT (index 1), Địa Chỉ (index 2)
-                required_fields = [0, 1, 3]  # Chỉ kiểm tra Họ Tên, Số ĐT, Địa Chỉ
-                validation_passed = True
+                #kiem tra xem ho ten, dia chi, so dth co bi trong khong
+                while True:
+                    # Chỉ kiểm tra các trường bắt buộc: Họ Tên (index 0), Số ĐT (index 1), Địa Chỉ (index 3)
+                    required_fields = [0, 1, 3]  # Chỉ kiểm tra Họ Tên, Số ĐT, Địa Chỉ
+                    validation_passed = True
+                    
+                    for idx in required_fields:
+                        if KH_information[idx] == "" or KH_information[idx].strip() == "":
+                            print(Fore.RED + Back.BLACK + f"Trường '{Ten_truong[idx]}' không được để trống. Vui lòng nhập lại.")
+                            if Ten_truong[idx] == "Họ tên":
+                                KH_information[0] = input("Nhập họ tên khách hàng: ")
+                            elif Ten_truong[idx] == "Số ĐT":
+                                KH_information[1] = input("Nhập số điện thoại khách hàng: ")
+                            elif Ten_truong[idx] == "Địa chỉ":
+                                KH_information[3] = input("Nhập địa chỉ khách hàng: ")
+                            validation_passed = False
+                    if validation_passed:
+                        break
                 
-                for idx in required_fields:
-                    if KH_information[idx] == "" or KH_information[idx].strip() == "":
-                        print(Fore.RED + Back.BLACK + f"Trường '{Ten_truong[idx]}' không được để trống. Vui lòng nhập lại.")
-                        if Ten_truong[idx] == "Họ Tên":
-                            KH_information[0] = input("Nhập họ tên khách hàng: ")
-                        elif Ten_truong[idx] == "Số ĐT":
-                            KH_information[1] = input("Nhập số điện thoại khách hàng: ")
-                        elif Ten_truong[idx] == "Địa Chỉ":
-                            KH_information[2] = input("Nhập địa chỉ khách hàng: ")
-                        validation_passed = False
-                if validation_passed:
-                    Cap_nhat_thanh_cong=True
-                    break
-            
-            if Cap_nhat_thanh_cong == True:
+                # Cập nhật dữ liệu
                 print(Fore.GREEN + Back.BLACK + "Cập nhật khách hàng thành công")
                 row = cell.row
                 ws.cell(row=row, column=col_index["Họ Tên"]).value = ho_ten
                 ws.cell(row=row, column=col_index["SĐT"]).value = so_dt
                 ws.cell(row=row, column=col_index["Email"]).value = email
                 ws.cell(row=row, column=col_index["Địa chỉ"]).value = dia_chi
-
-            else:
-                print(Fore.RED + Back.BLACK + "Không tìm thấy khách hàng có mã {}".format(ma_kh))
-    Workbook.save("ThongTinKhachHang.xlsx")
-            
+                break
+        
+        if not customer_found:
+            print(Fore.RED + Back.BLACK + "Không tìm thấy khách hàng có mã {}".format(ma_kh))
+            return False
+        
+        # Lưu file
+        Workbook.save("ThongTinKhachHang.xlsx")
+        return True
+        
+    except FileNotFoundError:
+        print(Fore.RED + Back.BLACK + "Không tìm thấy file ThongTinKhachHang.xlsx")
+        return False
+    except Exception as e:
+        print(Fore.RED + Back.BLACK + f"Lỗi không mong muốn: {e}")
+        return False
 
 #generate ID khach hang   
 def ID_kh():
-    wb=load_workbook(filename="ThongTinKhachHang.xlsx")
-    sheet=wb.active
+    """Tạo ID khách hàng mới với error handling"""
+    try:
+        wb=load_workbook(filename="ThongTinKhachHang.xlsx")
+        sheet=wb.active
+    except FileNotFoundError:
+        print(Fore.RED + Back.BLACK + "Không tìm thấy file ThongTinKhachHang.xlsx")
+        return "DLT00001"  # Return default ID if file not found
+    except Exception as e:
+        print(Fore.RED + Back.BLACK + f"Lỗi khi mở file Excel: {e}")
+        return "DLT00001"
     
     #Rut ra danh sach ma khach hang
     ma_kh_list = []
@@ -118,12 +153,19 @@ def ID_kh():
             except ValueError:
                 continue  # Bỏ qua các mã không hợp lệ
         new_id_num = max_id + 1
-        new_id = "DLU" + str(new_id_num).zfill(5)  # id luon co 5 chu so
+        new_id = "DLT" + str(new_id_num).zfill(5)  # id luon co 5 chu so
         return new_id
     
 def is_data_none(): #Kiem tra du lieu co bi rong khong
-    wb=load_workbook(filename="ThongTinKhachHang.xlsx")
-    sheet=wb.active
+    """Kiểm tra dữ liệu có rỗng không với error handling"""
+    try:
+        wb=load_workbook(filename="ThongTinKhachHang.xlsx")
+        sheet=wb.active
+    except FileNotFoundError:
+        return True  # File không tồn tại = dữ liệu rỗng
+    except Exception as e:
+        print(Fore.RED + Back.BLACK + f"Lỗi khi kiểm tra dữ liệu: {e}")
+        return True
     
     for row in sheet.iter_rows(min_row=2, max_row=2, min_col=1, values_only=True):
         if all(cell is None for cell in row): #kiem tra xem value trong cell co gia tri rong khong
@@ -148,9 +190,17 @@ def check_file():
         return True
     
 def show_customer_information(): #show danh sach khach hang
-    # Load excel file
-    wb=load_workbook(filename="ThongTinKhachHang.xlsx")
-    sheet=wb.active #load sheet dau tien
+    """Hiển thị danh sách khách hàng với error handling"""
+    try:
+        # Load excel file
+        wb=load_workbook(filename="ThongTinKhachHang.xlsx")
+        sheet=wb.active #load sheet dau tien
+    except FileNotFoundError:
+        print(Fore.RED + Back.BLACK + "Không tìm thấy file ThongTinKhachHang.xlsx")
+        return False
+    except Exception as e:
+        print(Fore.RED + Back.BLACK + f"Lỗi khi mở file Excel: {e}")
+        return False
 
     #create header from first row
     header = [cell.value for cell in sheet[1]]
@@ -159,31 +209,50 @@ def show_customer_information(): #show danh sach khach hang
     data_rows = []
     for row in sheet.iter_rows(min_row=2, values_only=True): #xet tung row
         data_rows.append(dict(zip(header, row))) #ghep header + gia tri tung row
-    #create dataframe from excel file
-    df = pd.DataFrame(data_rows)
-    return print(df)
+    try:
+        #create dataframe from excel file
+        df = pd.DataFrame(data_rows)
+        print(df)
+        return True
+    except Exception as e:
+        print(Fore.RED + Back.BLACK + f"Lỗi khi tạo DataFrame: {e}")
+        return False
 
 def create_file(): #tao file moi neu chua co 
-    wb = Workbook()
-    ws = wb.active
-    ws['A1'] = 'Mã KH'
-    ws['B1'] = 'Họ Tên'
-    ws['C1'] = 'Số ĐT'
-    ws['D1'] = 'Email'
-    ws['E1'] = 'Địa Chỉ'
-    ws['F1'] = 'Nhóm khách hàng' #def phan loai khach hang
-    ws['G1'] = 'Trạng thái' #def trang thai
-    ws['H1'] = 'Lần cuối mua hàng' #dung date time
-    ws['I1'] = 'Tổng tiền đã mua' #Lay data tu hoa don
-    
-    wb.save("ThongTinKhachHang.xlsx") #luu file
+    """Tạo file Excel mới với error handling"""
+    try:
+        wb = Workbook()
+        ws = wb.active
+        ws['A1'] = 'Mã KH'
+        ws['B1'] = 'Họ Tên'
+        ws['C1'] = 'Số ĐT'
+        ws['D1'] = 'Email'
+        ws['E1'] = 'Địa Chỉ'
+        ws['F1'] = 'Nhóm khách hàng' #def phan loai khach hang
+        ws['G1'] = 'Trạng thái' #def trang thai
+        ws['H1'] = 'Lần cuối mua hàng' #dung date time
+        ws['I1'] = 'Tổng tiền đã mua' #Lay data tu hoa don
+        
+        wb.save("ThongTinKhachHang.xlsx") #luu file
+        return True
+    except Exception as e:
+        print(Fore.RED + Back.BLACK + f"Lỗi khi tạo file Excel: {e}")
+        return False
     
    
 def add_customer(): #Them khach hang
-    new_customer = []
-    #load excel file
-    wb=load_workbook(filename="ThongTinKhachHang.xlsx")
-    sheet=wb.active
+    """Thêm khách hàng mới với error handling"""
+    try:
+        new_customer = []
+        #load excel file
+        wb=load_workbook(filename="ThongTinKhachHang.xlsx")
+        sheet=wb.active
+    except FileNotFoundError:
+        print(Fore.RED + Back.BLACK + "Không tìm thấy file ThongTinKhachHang.xlsx")
+        return False
+    except Exception as e:
+        print(Fore.RED + Back.BLACK + f"Lỗi khi mở file Excel: {e}")
+        return False
     
     #get next row
     next_row = sheet.max_row + 1
@@ -244,9 +313,13 @@ def add_customer(): #Them khach hang
         
         if validation_passed:
             break
-    for col, value in enumerate(new_customer, start=1):
-        sheet.cell(row=next_row, column=col, value=str(value)) #import value vao cell
-            
-    wb.save("ThongTinKhachHang.xlsx")
-    
-    return print(Fore.GREEN + Back.BLACK + "Thêm khách hàng thành công.")
+    try:
+        for col, value in enumerate(new_customer, start=1):
+            sheet.cell(row=next_row, column=col, value=str(value)) #import value vao cell
+                
+        wb.save("ThongTinKhachHang.xlsx")
+        print(Fore.GREEN + Back.BLACK + "Thêm khách hàng thành công.")
+        return True
+    except Exception as e:
+        print(Fore.RED + Back.BLACK + f"Lỗi khi lưu khách hàng: {e}")
+        return False
