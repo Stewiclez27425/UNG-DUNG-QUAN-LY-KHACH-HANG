@@ -9,6 +9,22 @@ import time
 from typing import Dict, List, Optional, Union
 import json
 
+#kiem tra trung lap data
+def is_dupe_data(header, value):
+    Workbook = load_workbook("ThongTinKhachHang.xlsx")
+    ws = Workbook.active
+    
+    if header == "SĐT":
+        for cell in ws['C'][1:]:
+            if value == cell.value: return True
+        else:
+            return False
+    elif header == "Email":
+        for cell in ws['D'][1:]:
+            if value == cell.value: return True
+        else:
+            return False
+
 #Phan loai khach hang (WIP)
 def phan_loai(): pass
     
@@ -16,7 +32,6 @@ def phan_loai(): pass
 def trang_thai_KH(): pass
 #xuat tong tien tu hoa don (WIP)
 
-#Cap nhap khach hang (WIP)
 def update_customer():
     KH_information = []
     Workbook=load_workbook("ThongTinKhachHang.xlsx")
@@ -175,9 +190,20 @@ def add_customer(): #Them khach hang
     print(Fore.CYAN + Back.BLACK + "\n ----------THÊM KHÁCH HÀNG----------")
     ma_kh = ID_kh()
     ho_ten = input("Nhập họ tên khách hàng: ")
-    so_dt = input("Nhập số điện thoại khách hàng: ")
+    so_dt = str(input("Nhập số điện thoại khách hàng: "))
+    while (is_dupe_data('SĐT', so_dt) == True) or (so_dt[0] != '0') or len(so_dt) != 10:
+        if is_dupe_data('SĐT', so_dt) == True:
+            print(Fore.RED + Back.BLACK + "Số điện thoại đã được đăng kí. Vui lòng nhập số điện thoại khác!!!")
+        elif so_dt[0] != '0':
+            print(Fore.RED + Back.BLACK + "Số điện thoại phải bắt đầu từ số 0")
+        elif len(so_dt) != 10:
+            print(Fore.RED + Back.BLACK + "Vui lòng nhập đủ 10 kí tự!!!")
+        so_dt = input("Nhập số điện thoại khách hàng: ")
     dia_chi = input("Nhập địa chỉ khách hàng: ")
     email = input("Nhập email khách hàng: ")
+    while is_dupe_data('Email', email) == True:
+        print(Fore.RED + Back.BLACK + "Email đã được đăng kí. Vui lòng dùng Email khác!!!")
+        email = input("Nhập email khách hàng: ")
     nhom_khach_hang = phan_loai()
     trang_thai = trang_thai_KH()
     lan_cuoi_mua_hang = time.time()
