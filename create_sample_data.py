@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 from datetime import datetime, timedelta
 import random
+from defined import *
 
 # Thêm thư mục hiện tại vào Python path
 current_dir = Path(__file__).parent
@@ -45,14 +46,14 @@ def create_customer_sample_data():
     
     try:
         # Tạo file Excel mới hoặc load file hiện có
-        file_path = "ThongTinKhachHang.xlsx"
+        file_path = "Sample_Data.xlsx"
         
-        if os.path.exists(file_path):
+        if check_file(file_path) == True:
             print(f"📁 File {file_path} đã tồn tại, sẽ ghi đè...")
-        
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "KhachHang"
+        elif check_file(file_path) == False:
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "KhachHang"
         
         # Tạo header
         headers = ["Mã KH", "Họ Tên", "Số ĐT", "Email", "Địa Chỉ", "Tổng tiền mua", "Ngày cuối mua"]
