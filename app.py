@@ -8,8 +8,9 @@ from pathlib import Path
 import time
 from typing import Dict, List, Optional, Union
 import json
-
-# Web dependencies (optional, only used when RUN_WEB=1)
+from defined import *
+   
+    # Web dependencies (optional, only used when RUN_WEB=1)
 try:
     from flask import Flask, render_template, request, jsonify, abort, make_response
     from werkzeug.exceptions import BadRequest, NotFound, InternalServerError
@@ -23,8 +24,8 @@ except ImportError as e:
     Flask = None
     render_template = None
     CORS = None
-    print(f"Flask dependencies not available: {e}")
-
+    print(f"Flask dependencies not available: {e}")        
+    
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -35,140 +36,6 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
-
-def ID_kh():
-    wb=load_workbook(filename="ThongTinKhachHang.xlsx")
-    sheet=wb.active
-    
-    #Rut ra danh sach ma khach hang
-    ma_kh_list = []
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        if row[0] is not None:
-            ma_kh_list.append(row[0])
-            
-    #tim ma khach hang lon nhat
-    if not ma_kh_list:
-        ID_kh = "DLT" + "0"*4 + "1"
-        return ID_kh
-    else:
-        max_id = 0
-        for ma_kh in ma_kh_list:
-            try:
-                num_part = int(ma_kh[3:])  # ma khach hang co dang DLT00001
-                if num_part > max_id:
-                    max_id = num_part
-            except ValueError:
-                continue  # Bỏ qua các mã không hợp lệ
-        new_id_num = max_id + 1
-        new_id = "DLU" + str(new_id_num).zfill(5)  # id luon co 5 chu so
-        return new_id
-
-def is_data_none():
-    wb=load_workbook(filename="ThongTinKhachHang.xlsx")
-    sheet=wb.active
-    
-    for row in sheet.iter_rows(min_row=2, max_row=2, min_col=1, values_only=True):
-        if all(cell is None for cell in row):
-            return True
-        else:
-            return False
-        
-def is_recycle_bin():
-    # Dùng Path join để tránh lỗi escape chuỗi trên Windows
-    file_path = Path("Recycle Bin") / "ThongTinKhachHang.xlsx"
-    if file_path.exists() and file_path.is_file():
-        return True
-
-def check_file():
-    if is_recycle_bin() == True: #False
-        return False
-    elif os.path.exists("ThongTinKhachHang.xlsx") == False:
-        return False
-    elif os.path.exists("ThongTinKhachHang.xlsx") and is_data_none() == True:
-        return False
-    else:
-        return True
-        
-
-def show_customer_information():
-    # Load excel file
-    wb=load_workbook(filename="ThongTinKhachHang.xlsx")
-    sheet=wb.active
-
-    #create header from first row
-    header = [cell.value for cell in sheet[1]]
-
-    #create list of dictionaries from excel file
-    data_rows = []
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        data_rows.append(dict(zip(header, row)))
-    #create dataframe from excel file
-    df = pd.DataFrame(data_rows)
-    return print(df)
-
-def create_file():
-    wb = Workbook()
-    ws = wb.active
-    ws['A1'] = 'Mã KH'
-    ws['B1'] = 'Họ Tên'
-    ws['C1'] = 'Số ĐT'
-    ws['D1'] = 'Email'
-    ws['E1'] = 'Địa Chỉ'
-    
-    wb.save("ThongTinKhachHang.xlsx")
-    
-def add_customer():
-    new_customer = []
-    #load excel file
-    wb=load_workbook(filename="ThongTinKhachHang.xlsx")
-    sheet=wb.active
-    
-    #get next row
-    next_row = sheet.max_row + 1
-    print(Fore.CYAN + Back.BLACK + "\n ----------THÊM KHÁCH HÀNG----------")
-    ma_kh = ID_kh()
-    ho_ten = input("Nhập họ tên khách hàng: ")
-    so_dt = input("Nhập số điện thoại khách hàng: ")
-    dia_chi = input("Nhập địa chỉ khách hàng: ")
-    email = input("Nhập email khách hàng: ")
-    new_customer.append(ma_kh)
-    new_customer.append(ho_ten)
-    new_customer.append(so_dt)
-    new_customer.append(email)
-    new_customer.append(dia_chi)
-    
-    # Xử lý trường Email không bắt buộc - nếu để trống thì gán khoảng trắng
-    if new_customer[3] == "" or new_customer[3].strip() == "":
-        new_customer[3] = " "
-    Ten_truong = ["Mã KH", "Họ Tên", "Số ĐT", "Email", "Địa Chỉ"]
-    
-    while True:
-        # Chỉ kiểm tra các trường bắt buộc: Họ Tên (index 1), Số ĐT (index 2), Địa Chỉ (index 4)
-        required_fields = [1, 2, 4]  # Chỉ kiểm tra Họ Tên, Số ĐT, Địa Chỉ
-        validation_passed = True
-        
-        for i in required_fields:
-            if new_customer[i] == "" or new_customer[i].strip() == "":
-                print(Fore.RED + Back.BLACK + f"Trường '{Ten_truong[i]}' không được để trống. Vui lòng nhập lại.")
-                validation_passed = False
-                if Ten_truong[i] == "Họ Tên":
-                    ho_ten = input("Nhập họ tên khách hàng: ")
-                    new_customer[i] = ho_ten
-                elif Ten_truong[i] == "Số ĐT":
-                    so_dt = input("Nhập số điện thoại khách hàng: ")
-                    new_customer[i] = so_dt
-                elif Ten_truong[i] == "Địa Chỉ":
-                    dia_chi = input("Nhập địa chỉ khách hàng: ")
-                    new_customer[i] = dia_chi
-        
-        if validation_passed:
-            break
-    for col, value in enumerate(new_customer, start=1):
-        sheet.cell(row=next_row, column=col, value=str(value))
-            
-    wb.save("ThongTinKhachHang.xlsx")
-    
-    return print(Fore.GREEN + Back.BLACK + "Thêm khách hàng thành công.")
     
 #########################
 # Flask web integration #
@@ -802,48 +669,68 @@ if app:
 def main():
     
     init(autoreset=False)
-    print(Fore.YELLOW + Back.BLACK + "\n ----------QUẢN LÝ KHÁCH HÀNG----------")
-    print("1. Thêm khách hàng")
-    print("2. Hiển thị khách hàng")
-    print("3. Tìm kiếm khách hàng")
-    print("4. Cập nhật khách hàng")
-    print("5. Xóa khách hàng")
-    print("0. Thoát")
-    print(Fore.CYAN + Back.BLACK)
-    choice = input("Nhập lựa chọn của bạn: ")
+    print(Fore.YELLOW + Back.BLACK + "\n ----------- DANH MỤC QUẢN LÝ -----------")
+    print("""
+1. Quản lý khách hàng
+2. Quản lý sản phẩm
+3. Quản lý đơn hàng
+4. Thống kê, báo cáo
+0. Thoát chương trình
+          """)
+    Quan_ly_choice=input("Nhập danh mục bạn muốn truy cập: ")
     
-    if choice == '1':
-        if not os.path.exists("ThongTinKhachHang.xlsx"):
-            print(Fore.YELLOW + Back.BLACK + "Chưa có file dữ liệu khách hàng. Đang tạo file...")
-            time.sleep(1)
-            create_file()
-            print(Fore.GREEN + Back.BLACK + "Tạo file thành công.")
-        elif os.path.exists("ThongTinKhachHang.xlsx") and is_data_none() == True:
-            print(Fore.YELLOW + Back.BLACK + "File dữ liệu khách hàng hiện tại đang trống. Vui lòng thêm khách hàng.")
-            add_customer()
-        else:
-            add_customer()
-    elif choice == '2':
-        if check_file() == False:
-            print(Fore.RED + Back.BLACK + "Chưa có dữ liệu khách hàng. Vui lòng thêm khách hàng trước!!!")
-        else:
-            show_customer_information()
-    elif choice == '3':
-        if not os.path.exists("ThongTinKhachHang.xlsx"):
-            print(Fore.YELLOW + Back.BLACK + "Chưa có file dữ liệu khách hàng. Đang tạo file...")
-            time.sleep(1)
-            create_file()
-            print(Fore.GREEN + Back.BLACK + "Tạo file thành công.")
-        elif os.path.exists("ThongTinKhachHang.xlsx") and is_data_none() == True:
-            print(Fore.YELLOW + Back.BLACK + "File dữ liệu khách hàng hiện tại đang trống. Vui lòng thêm khách hàng.")
-    elif choice == '4':
-        pass
-    elif choice == '5':
-        pass
-    elif choice == '0':
-        print(Fore.WHITE + Back.BLACK + "Thoát chương trình.")
-        exit()
-    else: print(Fore.RED + Back.BLACK + "Lựa chọn không hợp lệ. Vui lòng thử lại!!!")
+    if Quan_ly_choice == '1':
+        while True:
+            print(Fore.YELLOW + Back.BLACK + "\n ---------- QUẢN LÝ KHÁCH HÀNG ----------")
+            print("1. Thêm khách hàng")
+            print("2. Hiển thị khách hàng")
+            print("3. Tìm kiếm khách hàng")
+            print("4. Cập nhật khách hàng")
+            print("5. Xóa khách hàng")
+            print("0. Thoát")
+            print(Fore.CYAN + Back.BLACK)
+            choice = input("Nhập lựa chọn của bạn: ")
+            
+            if choice == '1':
+                if not os.path.exists("ThongTinKhachHang.xlsx"):
+                    print(Fore.YELLOW + Back.BLACK + "Chưa có file dữ liệu khách hàng. Đang tạo file...")
+                    time.sleep(1)
+                    create_file()
+                    print(Fore.GREEN + Back.BLACK + "Tạo file thành công.")
+                elif os.path.exists("ThongTinKhachHang.xlsx") and is_data_none() == True:
+                    print(Fore.YELLOW + Back.BLACK + "File dữ liệu khách hàng hiện tại đang trống. Vui lòng thêm khách hàng.")
+                    add_customer()
+                else:
+                    add_customer()
+            elif choice == '2':
+                if check_file() == False:
+                    print(Fore.RED + Back.BLACK + "Chưa có dữ liệu khách hàng. Vui lòng thêm khách hàng trước!!!")
+                else:
+                    show_customer_information()
+            elif choice == '3':
+                if not os.path.exists("ThongTinKhachHang.xlsx"):
+                    print(Fore.YELLOW + Back.BLACK + "Chưa có file dữ liệu khách hàng. Đang tạo file...")
+                    time.sleep(1)
+                    create_file()
+                    print(Fore.GREEN + Back.BLACK + "Tạo file thành công.")
+                elif os.path.exists("ThongTinKhachHang.xlsx") and is_data_none() == True:
+                    print(Fore.YELLOW + Back.BLACK + "File dữ liệu khách hàng hiện tại đang trống. Vui lòng thêm khách hàng.")
+            elif choice == '4':
+                update_customer()
+            elif choice == '5':
+                pass
+            elif choice == '0':
+                print(Fore.WHITE + Back.BLACK + "Thoát chương trình.")
+                break;
+            else: print(Fore.RED + Back.BLACK + "Lựa chọn không hợp lệ. Vui lòng thử lại!!!")
+    elif Quan_ly_choice == '2': pass
+    elif Quan_ly_choice == '3': pass
+    elif Quan_ly_choice == '4': pass
+    elif Quan_ly_choice == '0': 
+        print(Fore.WHITE + Back.BLACK +"THOÁT CHƯƠNG TRÌNH")
+        quit()
+    else: print(Fore.RED + Back.BLACK + "\nLỆNH KHÔNG HỢP LỆ. VUI LÒNG NHẬP LẠI!!!")
+
     
 if __name__ == "__main__":
     # Set RUN_WEB=1 to start Flask server; otherwise run CLI loop as before
