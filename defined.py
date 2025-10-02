@@ -13,34 +13,70 @@ import json
 def phan_loai(): pass
     
 #TrangThai (WIP)
-
+def trang_thai_KH(): pass
 #xuat tong tien tu hoa don (WIP)
 
 #Cap nhap khach hang (WIP)
 def update_customer():
+    KH_information = []
     Workbook=load_workbook("ThongTinKhachHang.xlsx")
     ws=Workbook.active
-    
-    #quet dong tieu de
-    header_row = ws[1]
-    
+
     #tao dict
-    col_index = {cell.value: cell.column for cell in header_row}
-    
-    #Lay col o cot Ma khach hang
-    col_Ma_KH = col_index.get("Mã KH")
-    
+    col_index = {cell.value: cell.column for cell in ws[1]}
     #Update Thong tin khach hang
-    Update_information = input ("Nhập mã khách hàng cần cập nhật thông tin: ")
-    
-    #list o cot ma khach hang
-    list_ma_KH = [cell.value for cell in ws[col_Ma_KH]]
+    ma_kh = input ("Nhập mã khách hàng cần cập nhật thông tin: ")
     
     #duyet tung phan tu trong ma khach hang
-    for i in list_ma_KH:
-        if Update_information == i:
+    for cell in ws['A'][1:]:
+        if ma_kh == cell.value:
             print("---------- CẬP NHẬT KHÁCH HÀNG ----------")
-            KH_information = []
+            #Thay doi thong tin khach hang
+            ho_ten = input("Nhập họ tên khách hàng: ")
+            so_dt = input("Nhập số điện thoại khách hàng: ")
+            dia_chi = input("Nhập địa chỉ khách hàng: ")
+            email = input("Nhập email khách hàng: ")
+            KH_information.append(ho_ten)
+            KH_information.append(so_dt)
+            KH_information.append(email)
+            KH_information.append(dia_chi)
+            Ten_truong = ['Họ tên', 'Số ĐT', '0', 'Địa chỉ']
+            #Bo qua email neu de trong
+            if KH_information[2] == '' or KH_information[2].strip() == '':
+                KH_information[2] = ' '
+
+            #kiem tra xem ho ten, dia chi, so dth co bi trong khong
+            while True:
+        # Chỉ kiểm tra các trường bắt buộc: Họ Tên (index 0), Số ĐT (index 1), Địa Chỉ (index 2)
+                required_fields = [0, 1, 3]  # Chỉ kiểm tra Họ Tên, Số ĐT, Địa Chỉ
+                validation_passed = True
+                
+                for idx in required_fields:
+                    if KH_information[idx] == "" or KH_information[idx].strip() == "":
+                        print(Fore.RED + Back.BLACK + f"Trường '{Ten_truong[idx]}' không được để trống. Vui lòng nhập lại.")
+                        if Ten_truong[idx] == "Họ Tên":
+                            KH_information[0] = input("Nhập họ tên khách hàng: ")
+                        elif Ten_truong[idx] == "Số ĐT":
+                            KH_information[1] = input("Nhập số điện thoại khách hàng: ")
+                        elif Ten_truong[idx] == "Địa Chỉ":
+                            KH_information[2] = input("Nhập địa chỉ khách hàng: ")
+                        validation_passed = False
+                if validation_passed:
+                    Cap_nhat_thanh_cong=True
+                    break
+            
+            if Cap_nhat_thanh_cong == True:
+                print(Fore.GREEN + Back.BLACK + "Cập nhật khách hàng thành công")
+                row = cell.row
+                ws.cell(row=row, column=col_index["Họ Tên"]).value = ho_ten
+                ws.cell(row=row, column=col_index["SĐT"]).value = so_dt
+                ws.cell(row=row, column=col_index["Email"]).value = email
+                ws.cell(row=row, column=col_index["Địa chỉ"]).value = dia_chi
+
+            else:
+                print(Fore.RED + Back.BLACK + "Không tìm thấy khách hàng có mã {}".format(ma_kh))
+    Workbook.save("ThongTinKhachHang.xlsx")
+            
 
 #generate ID khach hang   
 def ID_kh():
@@ -143,14 +179,18 @@ def add_customer(): #Them khach hang
     dia_chi = input("Nhập địa chỉ khách hàng: ")
     email = input("Nhập email khách hàng: ")
     nhom_khach_hang = phan_loai()
-    trang_thai = trang_thai()
+    trang_thai = trang_thai_KH()
     lan_cuoi_mua_hang = time.time()
-    tong_tien_da_mua = data_hoa_don() 
+    # tong_tien_da_mua = data_hoa_don() 
     new_customer.append(ma_kh)
     new_customer.append(ho_ten)
     new_customer.append(so_dt)
     new_customer.append(email)
     new_customer.append(dia_chi)
+    new_customer.append(nhom_khach_hang)
+    new_customer.append(trang_thai)
+    new_customer.append(lan_cuoi_mua_hang)
+    # new_customer.append(tong_tien_da_mua)
     
     # Xử lý trường Email không bắt buộc - nếu để trống thì gán khoảng trắng
     if new_customer[3] == "" or new_customer[3].strip() == "":
